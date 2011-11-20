@@ -1,0 +1,11 @@
+common: &common
+  dev_key:   AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g
+  username:  auvproj@gmail.com
+  password:  unsupervised
+  
+test:
+  <<: *common
+development:
+  <<: *common
+production:
+  <<: *common
