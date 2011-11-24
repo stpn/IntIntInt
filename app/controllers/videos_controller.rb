@@ -13,9 +13,8 @@ class VideosController < ApplicationController
   # GET /videos/1.json
   def show
     @video = Video.find(params[:id])
-    number = params[:number]
-    name = params[:name]
-    @video.content = @video.load_video(number)
+    
+     
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @video }
@@ -25,7 +24,18 @@ class VideosController < ApplicationController
   # GET /videos/new
   # GET /videos/new.json
   def new
-    @video = Video.new
+    number = params[:number]
+    @name = number
+     @video_content = Video.load_video(number)
+      @video_content.each do |youtube_id|
+        @video = Video.new
+          @video.content = youtube_id
+          @video.name = @name
+          @video.comments = Video.load_comments(youtube_id) 
+          @video.save
+      end
+    
+   
 
     respond_to do |format|
       format.html # new.html.erb
@@ -34,28 +44,22 @@ class VideosController < ApplicationController
   end
   
   
-  def videoload
-  end
-  
-  def do_videoload
-    @video = Video.new
-  
-    respond_to do |format|
-      format.html # new.html.erb
-    end
-  end
+
   
 
   # GET /videos/1/edit
   def edit
     @video = Video.find(params[:id])
+    
   end
 
   # POST /videos
   # POST /videos.json
   def create
     @video = Video.new(params[:video])
-
+    
+    
+    
     respond_to do |format|
       if @video.save
         format.html { redirect_to @video, notice: 'Video was successfully created.' }
@@ -71,6 +75,7 @@ class VideosController < ApplicationController
   # PUT /videos/1.json
   def update
     @video = Video.find(params[:id])
+  
 
     respond_to do |format|
       if @video.update_attributes(params[:video])

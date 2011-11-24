@@ -1,9 +1,8 @@
-<h1>Listing videos</h1>
+<h1>Parsed Videos</h1>
 
 <table>
   <tr>
-    <th>Name</th>
-    <th>Content</th>
+    <th>Youtube ID</th>
     <th></th>
     <th></th>
     <th></th>
@@ -11,10 +10,9 @@
 
 <% @videos.each do |video| %>
   <tr>
-    <td><%= video.name %></td>
     <td><%= video.content %></td>
-    <td><%= link_to 'Show', video %></td>
-    <td><%= link_to 'Edit', edit_video_path(video) %></td>
+    <td><%= link_to 'Show Comments', video %></td>
+ <!--   <td><%= link_to 'Edit', edit_video_path(video) %></td> -->
     <td><%= link_to 'Destroy', video, confirm: 'Are you sure?', method: :delete %></td>
   </tr>
 <% end %>
@@ -23,4 +21,4 @@
 
 <br />
 
-<%= link_to 'New Video', new_video_path %>
+<%= link_to 'New Query', new_video_path %>

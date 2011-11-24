@@ -1,19 +1,36 @@
 class Video < ActiveRecord::Base
 
-  
-  def load_video(number)
-    query ||= Video.yt_session.videos_by(:view_count => number)
-    @hm = String.new
-    @wow = Array.new
+  def self.load_video(number)
+    query ||= Video.yt_session.videos_by(:view_count => number, :max_results => 50)
+    @video_string = String.new
+    @video_array = Array.new
+    @id_array = Array.new
     query.videos.each do |wow|
-      @hm = wow.video_id
-      @wow.push @hm
+      @video_string = wow.video_id
+      @video_array.push @video_string
     end
-    return @wow
+    @video_array.each do |array_string|
+      @content_string = array_string[/video:(.*)/]
+      @video_id = $1
+      @id_array << @video_id
+    end
+    return @id_array
   end
 
+  def self.load_comments(youtube_id)
+    @comments_content = String.new
+    @comments_array = Array.new
+    comments_query ||= Video.yt_session.comments(youtube_id)
+    comments_query.each do |comment|
+      @comments_content = comment.content
+      @comments_array.push @comments_content
+    end
+    return @comments_array
+  end
+
+
   def self.yt_session
-     @yt_session ||= YouTubeIt::Client.new(:dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")    
-   end
+    @yt_session ||= YouTubeIt::Client.new(:dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
+  end
 
 end
