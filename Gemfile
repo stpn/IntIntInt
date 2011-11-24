@@ -2,7 +2,9 @@ source 'http://rubygems.org'
 
 gem 'rails', '3.1.1'
 
-gem 'youtube_it'
+  gem 'youtube_it'
+
+
 
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
@@ -28,7 +30,10 @@ gem 'jquery-rails'
 
 # Deploy with Capistrano
 # gem 'capistrano'
-
+group :production do
+gem "pg"
+  
+end
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
 
