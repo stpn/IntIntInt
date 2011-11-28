@@ -12,7 +12,11 @@ class Video < ActiveRecord::Base
     @video_array.each do |array_string|
       @content_string = array_string[/video:(.*)/]
       @video_id = $1
-      @id_array << @video_id
+      @video_find = Video.find_by_content(@video_id)
+       if !@video_find.blank?
+         @id_array << @video_id
+       end          
+      
     end
     return @id_array
   end

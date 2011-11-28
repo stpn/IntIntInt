@@ -51,7 +51,6 @@ class VideosController < ApplicationController
   # POST /videos.json
   def create
     number = params[:number]
-   
     @name = number
     @video_content = Video.load_video(number)
     @video_content.each do |youtube_id|
