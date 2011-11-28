@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(:version => 20111123193551) do
     t.string   "content"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "comments"
+    t.text     "comments"
   end
 
 end

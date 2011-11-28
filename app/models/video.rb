@@ -22,8 +22,12 @@ class Video < ActiveRecord::Base
     @comments_array = Array.new
     comments_query ||= Video.yt_session.comments(youtube_id)
     comments_query.each do |comment|
-      @comments_content = comment.content
-      @comments_array.push @comments_content
+      @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
+      matches = @comments_content.match(/\d+:\d+/)
+      if !matches.nil?
+              @comments_array.push @comments_content
+        end
+      
     end
     return @comments_array
   end
