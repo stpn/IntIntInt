@@ -53,12 +53,15 @@ class VideosController < ApplicationController
     number = params[:number]
     @name = number
     @video_content = Video.load_video(number)
-    @video_content.each do |youtube_id|
+    
+    @video_content.each do |hash|
+      hash.each do |k,v|
       @video = Video.new
-      @video.content = youtube_id
-      @video.name = @name
-      @video.comments = Video.load_comments(youtube_id)
+      @video.content = k
+      @video.keywords = v
+      @video.comments = Video.load_comments(@video.content)
       @video.save
+    end
     end
     
 
