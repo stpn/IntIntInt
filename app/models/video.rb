@@ -6,10 +6,7 @@ class Video < ActiveRecord::Base
   has_many :memberships
   has_many :metawords, :through => :memberships
 
-  @page = 1
-  @number = 1
-  @indexing = 1
-
+  
 
 
   def self.load_video(number, page, indexing)
@@ -21,9 +18,6 @@ class Video < ActiveRecord::Base
     if @video_array.nil?
       @video_array = Array.new
     end
-    @page = page
-    @number = number
-    @indexing = indexing
     query ||= Video.yt_session.videos_by(:view_count => number, :max_results => 50, :page => page, :index => indexing, :per_page => 50)
     @video_string = String.new
     @keywords_array = Array.new
@@ -85,43 +79,7 @@ class Video < ActiveRecord::Base
       end
     end
     return @comments_array
-
   end
-
-
-  def self.load_comments
-    sleep(30)
-    @comments_content = String.new
-    @comments_array = Array.new
-
-
-
-    comments_query ||= Video.yt_session.comments(youtube_id)
-    #  rescue
-    #    if (@page < 19)
-    #    Video.load_video(@number, @page+1, @indexing+50)
-    #  else
-    #        Video.load_video(@number+5000, 1, 1)
-    #      end
-    # else
-    comments_query.each do |comment|
-      @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
-      matches = @comments_content.match(/\d+:\d+/)
-      if !matches.nil?
-        @comments_array.push @comments_content
-      end
-    end
-    return @comments_array
-
-  end
-
-
-
-
-  def self.yt_session
-    @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
-  end
-
 
   def loop_through_videos
     y_ids = Array.new
@@ -148,8 +106,6 @@ class Video < ActiveRecord::Base
     return @y_ids
   end
 
-
-
   def self.collect_videos
     @y_ids = Video.collect_ids_for_download
     @y_ids.each do |v|
@@ -169,6 +125,10 @@ class Video < ActiveRecord::Base
 
 
 
+
+  def self.yt_session
+    @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
+  end
 
 
 end
