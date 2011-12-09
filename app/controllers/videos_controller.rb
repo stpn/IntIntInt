@@ -2,7 +2,7 @@ class VideosController < ApplicationController
   # GET /videos
   # GET /videos.json
   def index
-    @videos = Video.all
+    @videos = Video.order("id").page(params[:page])
     respond_to do |format|
       format.html
       format.json { render json: @videos }
@@ -51,9 +51,7 @@ class VideosController < ApplicationController
   # POST /videos.json
   def create
     number = params[:number]
-    @name = number
-    @video_content = Video.load_video(number)
-    
+    @video_content = Video.load_video(number, 1)
     @video_content.each do |hash|
       hash.each do |k,v|
       @video = Video.new

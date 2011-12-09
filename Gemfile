@@ -4,7 +4,8 @@ gem 'rails', '3.1.1'
 
   gem 'youtube_it'
   gem 'whenever'
-
+  gem 'viddl-rb'
+  gem 'kaminari'
 
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'

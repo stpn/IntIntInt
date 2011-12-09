@@ -1,0 +1,20 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Content:</b>
+  <%= @phrase.content %>
+</p>
+
+<p>
+  <b>Video:</b>
+  <%= @phrase.video_id %>
+</p>
+
+<p>
+  <b>Youtubeid:</b>
+  <%= @phrase.youtubeid %>
+</p>
+
+
+<%= link_to 'Edit', edit_phrase_path(@phrase) %> |
+<%= link_to 'Back', phrases_path %>

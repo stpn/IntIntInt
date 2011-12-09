@@ -1,0 +1,27 @@
+<h1>Listing phrases</h1>
+
+<table>
+  <tr>
+    <th>Content</th>
+    <th>Video</th>
+    <th>Youtubeid</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @phrases.each do |phrase| %>
+  <tr>
+    <td><%= phrase.content %></td>
+    <td><%= phrase.video_id %></td>
+    <td><%= phrase.youtubeid %></td>
+    <td><%= link_to 'Show', phrase %></td>
+    <td><%= link_to 'Edit', edit_phrase_path(phrase) %></td>
+    <td><%= link_to 'Destroy', phrase, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Phrase', new_phrase_path %>

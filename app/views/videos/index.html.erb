@@ -1,4 +1,5 @@
 <h1>Parsed Videos</h1>
+<%= paginate @videos %>
 
 <table>
   <tr>
@@ -10,7 +11,7 @@
 
 <% @videos.each do |video| %>
   <tr>
-    <td><%= video.content %></td>
+    <td><%= video.id %>|<%= video.content %></td>
     <td><%= link_to 'Show Comments', video %></td>
  <!--   <td><%= link_to 'Edit', edit_video_path(video) %></td> -->
     <td><%= link_to 'Destroy', video, confirm: 'Are you sure?', method: :delete %></td>

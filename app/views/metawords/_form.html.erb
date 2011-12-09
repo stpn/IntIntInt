@@ -1,0 +1,25 @@
+<%= form_for(@metaword) do |f| %>
+  <% if @metaword.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@metaword.errors.count, "error") %> prohibited this metaword from being saved:</h2>
+
+      <ul>
+      <% @metaword.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :content %><br />
+    <%= f.text_field :content %>
+  </div>
+  <div class="field">
+    <%= f.label :youtubeid %><br />
+    <%= f.text_field :youtubeid %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

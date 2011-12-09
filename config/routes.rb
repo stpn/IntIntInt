@@ -1,4 +1,14 @@
 YApp::Application.routes.draw do
+  resources :metawords
+
+  resources :phrases
+
+  resources :corpus_comments
+
+  resources :words
+  
+  resources :evaluation
+
   resources :videos, :collection=>{:videoload => :get, :do_videoload => :post}
   
   root :to => 'videos#index'

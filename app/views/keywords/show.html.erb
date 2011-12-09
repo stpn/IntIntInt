@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Content:</b>
+  <%= @keyword.content %>
+</p>
+
+<p>
+  <b>Video:</b>
+  <%= @keyword.video_id %>
+</p>
+
+
+<%= link_to 'Edit', edit_keyword_path(@keyword) %> |
+<%= link_to 'Back', keywords_path %>

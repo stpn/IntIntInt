@@ -44,5 +44,10 @@ module YApp
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+    
+    
+    #MySQL stuff
+    config.active_record.identity_map = false
+    
   end
 end

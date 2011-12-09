@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Content:</b>
+  <%= @metaword.content %>
+</p>
+
+<p>
+  <b>Youtubeid:</b>
+  <%= @metaword.youtubeid %>
+</p>
+
+
+<%= link_to 'Edit', edit_metaword_path(@metaword) %> |
+<%= link_to 'Back', metawords_path %>

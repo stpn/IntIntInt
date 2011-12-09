@@ -1,0 +1,13 @@
+<% @relevant_phrases.each do |ph| %>
+ <%= form_for(ph) do |p| %>
+	
+	<p> <%= ph.content %> |
+		<%= p.radio_button :rating, "unknown" %> Unknown |
+		<%= p.radio_button :rating, "positive" %> Positive |		
+		<%= p.radio_button :rating, "negative" %> Negative |</p>
+		
+		<div class = "actions">
+
+<p><%= p.submit %></p>
+</div>
+<% end %><% end %>		

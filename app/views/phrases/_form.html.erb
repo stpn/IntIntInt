@@ -1,0 +1,29 @@
+<%= form_for(@phrase) do |f| %>
+  <% if @phrase.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@phrase.errors.count, "error") %> prohibited this phrase from being saved:</h2>
+
+      <ul>
+      <% @phrase.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :content %><br />
+    <%= f.text_field :content %>
+  </div>
+  <div class="field">
+    <%= f.label :video_id %><br />
+    <%= f.number_field :video_id %>
+  </div>
+  <div class="field">
+    <%= f.label :youtubeid %><br />
+    <%= f.text_field :youtubeid %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
