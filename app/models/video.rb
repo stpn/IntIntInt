@@ -6,7 +6,7 @@ class Video < ActiveRecord::Base
   has_many :memberships
   has_many :metawords, :through => :memberships
 
-  
+
 
 
   def self.load_video(number, page, indexing)
@@ -34,7 +34,7 @@ class Video < ActiveRecord::Base
     @video_array.each do |hash|
       hash.each do |k, v|
         @video_find = Video.find_by_content(k)
-        if @video_find.blank?
+        if !@video_find.blank?
           hash.delete(k)
         end
       end
@@ -44,7 +44,7 @@ class Video < ActiveRecord::Base
       @video_array.each do |hash|
         hash.each do |k,v|
           @video = Video.create(:content => k, :keywords => v )
-          # @video.comments = Video.load_comments(k)
+          @video.comments = Video.load_comments(k)
           @video.save!
         end
       end
@@ -81,6 +81,37 @@ class Video < ActiveRecord::Base
     return @comments_array
   end
 
+
+  def self.load_all_comments(class_array)
+    @comments_content = String.new
+    class_array.each do |vv|
+      @comments_array = Array.new
+      comments_query ||= @yt_session.comments(vv.content)
+      comments_query.each do |comment|
+        @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
+        matches = @comments_content.match(/\d+:\d+/)
+        if !matches.nil?
+          @comments_array.push @comments_content
+          #            p video.comments
+        end
+      end
+      vv.comments = @comments_array
+      vv.save!
+    end
+    sleep(30)
+  end
+
+  def Video.populate_comments_from_loop(number)
+    @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
+    Video.find_in_batches(:conditions => { :comments => nil}, :batch_size => 15) do  |vb|
+      Video.load_all_comments(vb)
+    end
+    return @vid_array
+  end
+
+
+
+
   def loop_through_videos
     y_ids = Array.new
     ActiveRecord::Base.uncached do
@@ -111,24 +142,59 @@ class Video < ActiveRecord::Base
     @y_ids.each do |v|
       dl_string = "http://www.youtube.com/watch?v="+v
       %x[cd /Users/stepanboltalin/Documents/Rails/Intel/IntIntInt_front/public/videos && exec /Users/stepanboltalin/.rvm/gems/ruby-1.9.3-p0/gems/viddl-rb-0.5.5/bin/viddl-rb http://www.youtube.com/watch?v=#\{dl_string\}]
-      sleep(20)
-    end
-  end
+         sleep(20)
+         end
+         end
+
+         def self.yt_session
+           @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
+           return @yt_session
+         end
+
+
+
+         def self.for_each(conditions = nil, step = 25, &block)
+           c = count :conditions => conditions
+           (c / step).times do |i|
+             find(:all, :conditions => conditions,
+             :limit => step,  :offset => step * i).each do |model|
+               yield model
+             end
+           end
+         end
+
+
+         def self.remove_videos_without_downloads
+           #This deletes objects that don't have corresponding files
+           objects_list = String.new
+           f = File.open('downloads.txt', 'r')
+           video_list = f.read
+           time = Time.now.getutc
+           time = time.to_s
+           File.open(time+'existing_dls.txt', 'a') {|f| f.write(video_list) }
+
+           #        video_list = %{}
+           Video.all.each do |v|
+             objects_list << v.content
+           end
+           parsed = objects_list.split.reject { |w| video_list.include?(w) }.join(' ')
+           bad_guys = objects_list - parsed
+           bad_guys.each do |p|
+             wrong = Video.find_by_content(p)
+             Video.destroy(wrong)
+           end
+         end
+
+         def self.create_list_of_videos_with_donwloads
+           vids = Video.find_all_by_download(true)
+           vids = vids.to_s
+           time = Time.now.getutc
+           time = time.to_s
+           File.open(time+'vid_w_dls.txt', 'a') {|f| f.write(vids) }
+         end
 
 
 
 
 
-
-
-
-
-
-
-
-  def self.yt_session
-    @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
-  end
-
-
-end
+         end

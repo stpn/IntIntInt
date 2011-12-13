@@ -1,4 +1,16 @@
 YApp::Application.routes.draw do
+  resources :users, :user_sessions
+   match 'login' => 'user_sessions#new', :as => :login
+   match 'logout' => 'user_sessions#destroy', :as => :logout
+
+  resources :judges
+
+  get "connotation/create"
+
+  get "connotation/edit"
+
+  get "connotation/update"
+
   resources :metawords
 
   resources :phrases
@@ -9,9 +21,11 @@ YApp::Application.routes.draw do
   
   resources :evaluation
 
-  resources :videos, :collection=>{:videoload => :get, :do_videoload => :post}
+  resources :videos
   
-  root :to => 'videos#index'
+#  root :to => 'videos#index'
+  root :to => "users#index", :as => :homepage
+
  
 
   # The priority is based upon order of creation:

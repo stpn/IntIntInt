@@ -2,7 +2,7 @@ class VideosController < ApplicationController
   # GET /videos
   # GET /videos.json
   def index
-    @videos = Video.order("id").page(params[:page])
+    @videos = Video.order(:id).page(params[:page])
     respond_to do |format|
       format.html
       format.json { render json: @videos }
@@ -13,7 +13,6 @@ class VideosController < ApplicationController
   # GET /videos/1.json
   def show
     @video = Video.find(params[:id])
-
 
     respond_to do |format|
       format.html # show.html.erb

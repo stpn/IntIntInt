@@ -1,6 +1,9 @@
 class Phrase < ActiveRecord::Base
 
+@phraseid = 0
+
 belongs_to :video
+has_many :connotations
 
 def self.load_all_comments
     Video.destroy_all "comments = '--- []\n'"
@@ -46,5 +49,25 @@ def self.load_all_comments
       phrase = Phrase.find(:all, :conditions => "rating IS NULL")
       return phrase 
     end
-
+    
+    def self.remove_junk
+      Phrase.all.each do |phrase|
+      parsed = phrase.content
+      parsed = parsed.gsub(/(\\uFEFF)/,'')
+      parsed = parsed.gsub(/(...\n-\s!..)/,'')
+      parsed = parsed.gsub(/(\W\n)/,'')
+      parsed = parsed.gsub(/(\n)/,'')
+      parsed = parsed.gsub(/(\\n)/,'')
+      phrase.content = parsed
+      phrase.save!
+    end
+  end
+  
+  def add_connotation(rating)
+    c = self.connotations.create(:rating => rating)
+    c.save!
+  end
+    
+    
+    
 end

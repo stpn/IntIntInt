@@ -2,5 +2,6 @@
 require File.expand_path('../application', __FILE__)
 require 'rails_extensions'
 
+
 # Initialize the rails application
 YApp::Application.initialize!

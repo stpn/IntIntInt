@@ -2,7 +2,7 @@ class PhrasesController < ApplicationController
   # GET /phrases
   # GET /phrases.json
   def index
-    @phrases = Phrase.all
+    @phrases = Phrase.order(:id).page(params[:page])
 
     respond_to do |format|
       format.html # index.html.erb
@@ -52,6 +52,8 @@ class PhrasesController < ApplicationController
       end
     end
   end
+  
+  
 
   # PUT /phrases/1
   # PUT /phrases/1.json

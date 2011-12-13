@@ -1,0 +1,23 @@
+<h1>Listing user_sessions</h1>
+
+<table>
+  <tr>
+    <th>Username</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @user_sessions.each do |user_session| %>
+  <tr>
+    <td><%= user_session.username %></td>
+    <td><%= link_to 'Show', user_session %></td>
+    <td><%= link_to 'Edit', edit_user_session_path(user_session) %></td>
+    <td><%= link_to 'Destroy', user_session, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'Login', new_user_session_path %>
