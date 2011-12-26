@@ -2,7 +2,7 @@ class MetawordsController < ApplicationController
   # GET /metawords
   # GET /metawords.json
   def index
-    @metawords = Metaword.all
+    @metawords = Metaword.order(:id).page(params[:page])
 
     respond_to do |format|
       format.html # index.html.erb

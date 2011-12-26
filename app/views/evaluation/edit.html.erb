@@ -1,10 +1,10 @@
+<%= paginate @relevant_phrases %>
 
 
 <% @relevant_phrases.each do |ph| %>
  <%= form_for(ph) do |p| %>
-
-        <%= p.hidden_field :phraseid, :value => ph.id %>	
-	<p> <%= ph.content %> |
+        <%= hidden_field_tag 'ph_id', ph_id %>	
+		<p> <%= ph.content %> |
 		<%= radio_button_tag 'rating', 'unknown' %> | Unknown 
 		<%= radio_button_tag 'rating', 'positive' %> | Positive
 		<%= radio_button_tag 'rating', 'negative' %> | Negative </p>
@@ -14,3 +14,5 @@
 <p><%= p.submit %></p>
 </div>
 <% end %><% end %>
+
+

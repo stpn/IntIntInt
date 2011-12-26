@@ -2,8 +2,8 @@
 
 one:
   user_id: 1
-  evaluation_id: 1
+  connotation_id: 1
 
 two:
   user_id: 1
-  evaluation_id: 1
+  connotation_id: 1

@@ -1,6 +1,7 @@
 class Connotation < ActiveRecord::Base
+  
 belongs_to :phrase
-has_many :evaluations
+belongs_to :user
 
 
 end

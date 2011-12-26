@@ -1,9 +1,9 @@
 class PhrasesController < ApplicationController
+  before_filter :require_user
   # GET /phrases
   # GET /phrases.json
   def index
     @phrases = Phrase.order(:id).page(params[:page])
-
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @phrases }
@@ -34,7 +34,8 @@ class PhrasesController < ApplicationController
 
   # GET /phrases/1/edit
   def edit
-    @phrase = Phrase.find(params[:id])
+        @relevant_phrases = current_user.good_phrases_for_user
+        @relevant_phrases = Kaminari.paginate_array(@relevant_phrases).page(params[:page]).per(25)
   end
 
   # POST /phrases
@@ -59,8 +60,9 @@ class PhrasesController < ApplicationController
   # PUT /phrases/1.json
   def update
     @phrase = Phrase.find(params[:id])
-
+    @connotation = @phrase.connotations << Connotation.create(params[:new_connotation])
     respond_to do |format|
+
       if @phrase.update_attributes(params[:phrase])
         format.html { redirect_to(:back) }
         format.json { head :ok }

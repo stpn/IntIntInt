@@ -1,5 +1,5 @@
 <h1>Listing phrases</h1>
-<%= paginate @phrases %>
+<%= paginate @phrases %> 
 
 <table>
   <tr>
@@ -16,13 +16,9 @@
     <td><%= phrase.content %></td>
     <td><%= phrase.video_id %></td>
     <td><%= phrase.youtubeid %></td>
-    <td><%= link_to 'Show', phrase %></td>
-    <td><%= link_to 'Edit', edit_phrase_path(phrase) %></td>
-    <td><%= link_to 'Destroy', phrase, confirm: 'Are you sure?', method: :delete %></td>
+    <td><%= phrase.id %></td>
+
+
   </tr>
 <% end %>
 </table>
-
-<br />
-
-<%= link_to 'New Phrase', new_phrase_path %>

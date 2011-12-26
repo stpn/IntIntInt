@@ -3,9 +3,9 @@ class UserSessionsController < ApplicationController
   # GET /user_sessions/new
   # GET /user_sessions/new.xml
   def new
-    User.ignore_blank_passwords = false
-    
-    @user_session = UserSession.new
+     username = params[:username]
+      @user = User.find_by_username(username)
+    @user_session = UserSession.new(params[:username])
 
     respond_to do |format|
       format.html # new.html.erb
@@ -16,9 +16,9 @@ class UserSessionsController < ApplicationController
   # POST /user_sessions
   # POST /user_sessions.xml
   def create
-    User.ignore_blank_passwords = false
-    
-    @user_session = UserSession.new(params[:user_session])
+    username = params[:username]
+      @user = User.find_by_username(username)
+    @user_session = UserSession.new(@user)
     respond_to do |format|
       if @user_session.save
         format.html { redirect_to(:users, :notice => 'Login Successful') }

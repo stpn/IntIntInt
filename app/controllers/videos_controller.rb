@@ -1,7 +1,11 @@
 class VideosController < ApplicationController
+  
   # GET /videos
   # GET /videos.json
   def index
+    
+     @relevant_videos = Video.all_relevant_videos
+      @relevant_videos = Kaminari.paginate_array(@relevant_videos).page(params[:page]).per(25)
     @videos = Video.order(:id).page(params[:page])
     respond_to do |format|
       format.html

@@ -1,17 +1,22 @@
 class EvaluationController < ApplicationController
 
   def edit
-
-    @relevant_phrases = Phrase.all_relevant_phrases
-    rating = params[:rating]
-    phraseid = params[:phraseid]
-
-        
+    #this is looping through phrases while it should be looping through connotations or shit like that...
+    @relevant_phrases = current_user.good_phrases_for_user
+    @relevant_phrases = Kaminari.paginate_array(@relevant_phrases).page(params[:page]).per(25)
     respond_to do |format|
-      @phrase = Phrase.find(params[:id => phraseid])
-      @phrase.add_connotation(rating)      
+ 
+#       !
       format.html
-      format.json {render json: @evaluation}
+    end
+  end
+
+
+  def update
+    rating = params[:rating]
+    respond_to do |format|
+    cc =  Phrase.find(params[:ph_id]).connotations.create!(:user => current_user, :rating => rating)
+    cc.save!
     end
   end
 

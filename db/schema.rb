@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111213203906) do
+ActiveRecord::Schema.define(:version => 20111226200022) do
 
   create_table "comments", :force => true do |t|
     t.string   "content"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(:version => 20111213203906) do
     t.integer  "phrase_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
 
   create_table "corpus_comments", :force => true do |t|
@@ -39,13 +40,6 @@ ActiveRecord::Schema.define(:version => 20111213203906) do
 
   create_table "discards", :force => true do |t|
     t.string   "youtubeid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "discards", ["youtubeid"], :name => "index_discards_on_youtubeid"
-
-  create_table "evaluations", :force => true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -73,6 +67,13 @@ ActiveRecord::Schema.define(:version => 20111213203906) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "rating"
+  end
+
+  create_table "opinions", :force => true do |t|
+    t.integer  "user_id"
+    t.integer  "connotation_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "phrases", :force => true do |t|
@@ -110,8 +111,8 @@ ActiveRecord::Schema.define(:version => 20111213203906) do
     t.text     "comments"
     t.string   "keywords"
     t.string   "views"
-    t.boolean  "download"
     t.string   "rating"
+    t.boolean  "download"
   end
 
   add_index "videos", ["comments"], :name => "index_videos_on_comments"

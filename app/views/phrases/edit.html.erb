@@ -1,6 +1,25 @@
-<h1>Editing phrase</h1>
+<p>
+<b><font size="6" color="black"> Rating phrases, <%= @relevant_phrases.length %> phrases left</font></b>
+</p>
+<%= paginate @relevant_phrases %>
 
-<%= render 'form' %>
+<table>
 
-<%= link_to 'Show', @phrase %> |
+<% @relevant_phrases.each do |ph| %>
+ <%= form_for(ph) do |p| %>
+	<tr><td width="400">	<p> <%= ph.content %> </td>
+			<%= fields_for :new_connotation do |f|%>
+	<td width = "500">	<%= f.radio_button :rating, "unknown" %>  <font size="3" color="#666666">Unknown</font> |
+		<%= f.radio_button :rating, "positive" %> <font size="3" color="green">Positive</font> | 
+		<%= f.radio_button :rating, "negative" %>  <font size="3" color="red">Negative </font> | 
+<!--		<%= f.radio_button :rating, "junk" %>  <font size="3" color="black">junk </font> | -->
+		
+			<%= f.hidden_field :user_id, :value => current_user.id %>
+			<%= f.hidden_field :username, :value => current_user.username %>
+			
+<% end %>
+<%= p.submit "Rate!" %>
+<% end %><% end %></td></tr>
+</table>
+
 <%= link_to 'Back', phrases_path %>

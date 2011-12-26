@@ -2,7 +2,10 @@ YApp::Application.routes.draw do
   resources :users, :user_sessions
    match 'login' => 'user_sessions#new', :as => :login
    match 'logout' => 'user_sessions#destroy', :as => :logout
-
+   
+   match 'eval' => 'phrases/1/edit', :as => :eval
+   
+   
   resources :judges
 
   get "connotation/create"
@@ -24,7 +27,7 @@ YApp::Application.routes.draw do
   resources :videos
   
 #  root :to => 'videos#index'
-  root :to => "users#index", :as => :homepage
+  root :to => "phrases#edit", :as => :homepage
 
  
 

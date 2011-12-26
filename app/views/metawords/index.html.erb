@@ -1,4 +1,5 @@
 <h1>Listing metawords</h1>
+<%= paginate @metawords %> 
 
 <table>
   <tr>
@@ -13,13 +14,7 @@
   <tr>
     <td><%= metaword.content %></td>
     <td><%= metaword.youtubeid %></td>
-    <td><%= link_to 'Show', metaword %></td>
-    <td><%= link_to 'Edit', edit_metaword_path(metaword) %></td>
-    <td><%= link_to 'Destroy', metaword, confirm: 'Are you sure?', method: :delete %></td>
   </tr>
 <% end %>
 </table>
 
-<br />
-
-<%= link_to 'New Metaword', new_metaword_path %>

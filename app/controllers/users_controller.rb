@@ -25,7 +25,7 @@ class UsersController < ApplicationController
   # GET /users/new.json
   def new
     @user = User.new
-    @user.ignore_blank_passwords = false
+    @user.ignore_blank_passwords = true
 
     respond_to do |format|
       format.html # new.html.erb
@@ -42,7 +42,7 @@ class UsersController < ApplicationController
   # POST /users.json
   def create
     @user = User.new(params[:user])
-    @user.ignore_blank_passwords = false
+    @user.ignore_blank_passwords = true
     
 
     respond_to do |format|
@@ -60,7 +60,7 @@ class UsersController < ApplicationController
   # PUT /users/1.json
   def update
     @user = User.find(params[:id])
-    @user.ignore_blank_passwords = false
+    @user.ignore_blank_passwords = true
     
 
     respond_to do |format|
