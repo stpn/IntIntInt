@@ -11,10 +11,10 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111226200022) do
+ActiveRecord::Schema.define(:version => 20111226223954) do
 
   create_table "comments", :force => true do |t|
-    t.string   "content"
+    t.text     "content"
     t.integer  "video_id"
     t.string   "youtubeid"
     t.datetime "created_at"
@@ -77,12 +77,12 @@ ActiveRecord::Schema.define(:version => 20111226200022) do
   end
 
   create_table "phrases", :force => true do |t|
-    t.string   "content"
+    t.text     "content"
     t.integer  "video_id"
     t.string   "youtubeid"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "timecode"
+    t.text     "timecode"
     t.boolean  "rating"
   end
 
@@ -109,7 +109,7 @@ ActiveRecord::Schema.define(:version => 20111226200022) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "comments"
-    t.string   "keywords"
+    t.text     "keywords"
     t.string   "views"
     t.string   "rating"
     t.boolean  "download"
