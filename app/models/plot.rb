@@ -286,6 +286,7 @@ class Plot < ActiveRecord::Base
 ##############################     
    
    def self.create_iframes(ytids)
+     ytids.split(',')
      result = Array.new
      ytids.each do |y|
    result << "<iframe width='320' height='200' src= http://www.youtube.com/embed/#{y}   frameborder='0' ></iframe>"
