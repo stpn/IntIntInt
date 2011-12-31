@@ -14,7 +14,7 @@ class Plot < ActiveRecord::Base
 
   def self.search(search)
   
-    @search = search.gsub(/[,;:\-{}\[\]()]/, '')
+    @search = search.gsub(/[,;:\-{}\[\]()]/, ' ')
     @multiple_words = Array.new
     @single_words = Array.new        
     @neg = Array.new
@@ -60,16 +60,17 @@ class Plot < ActiveRecord::Base
       @multiple_words << q
     end
     
- # This finds words in our metaword corpus and returns arrays with words that are present         !!!! ADDED STOPWORD CHECKING!!
-    @multiple_words.each do |k|
-      mtch = k.match(/\s/)
+ # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! ADDED STOPWORD CHECKING!!
+    @multiple_words.each do |w|
+      mtch = w.match(/\s/)
       if mtch.nil?
-      if !@stop_words.include?(k)
-         cont = Metaword.find_by_content(k)
+      if !@stop_words.include?(w)
+         cont = Metaword.find_by_content(w)
+         p cont
          if !cont.blank?
-         @positive[k] << cont.youtubeid
+         @positive[w] << "#{cont.youtubeid} "
        else 
-         @neg << k
+         @neg << w
        end
      end
    end
@@ -81,17 +82,20 @@ class Plot < ActiveRecord::Base
     Plot.start_hypernymation(@neg_to_pos, 0)
 
 
-    @positive2 = @positive.merge(Plot.hypernyms_to_metawords)
+    @positive = @positive.merge(Plot.hypernyms_to_metawords)
     
-    @positive2.each do |k,v|
+    
+    @positive.each do |k,v|
       @sorted_words << k
-    end    
+    end 
+
+#Sort the words according to init string       
     @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
     
-
     @sorted_words.each do |s|
-      @result << "#{@positive[s]}, "
-      
+      @positive[s].split(' ').each do |b|
+      @result << "#{b}"
+    end
     end
     return @result
       
@@ -116,7 +120,7 @@ class Plot < ActiveRecord::Base
         end
         temp_arr = temp_arr.uniq
         temp_arr.each do |t|
-          hypernym_youtubeids[k] << " #{t}"
+          hypernym_youtubeids[k] << "#{t}, "
         end
         temp_arr = temp_arr.clear
       end
@@ -283,7 +287,6 @@ class Plot < ActiveRecord::Base
    
    def self.create_iframes(ytids)
      result = Array.new
-     ytids = ytids.split(', ')
      ytids.each do |y|
    result << "<iframe width='320' height='200' src= http://www.youtube.com/embed/#{y}   frameborder='0' ></iframe>"
  end
@@ -293,11 +296,10 @@ class Plot < ActiveRecord::Base
  
   def self.create_youtubelinks(ytids)
     result = Array.new
-    ytids = ytids.split(', ')
     ytids.each do |y|
-  result << "<http://www.youtube.com/watch?v=#{y}"
-end
-return result
-end
+      result << "<http://www.youtube.com/watch?v=#{y}"
+    end
+    return result
+  end
 
 end
