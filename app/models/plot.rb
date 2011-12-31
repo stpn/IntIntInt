@@ -107,7 +107,7 @@ class Plot < ActiveRecord::Base
     
     @sorted_words.each do |s|
       @positive[s].split(' ').each do |b|
-      @result[s] << "#{b}"
+      @result[s] << "#{b} "
     end
     end
     
