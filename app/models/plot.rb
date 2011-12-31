@@ -21,7 +21,9 @@ class Plot < ActiveRecord::Base
 
   def self.search(search)
   
-    @search = search.gsub(/[\d\\n\.,;:\-{}\[\]()]/, ' ').downcase
+    @search = search.gsub(/[\.,;:\-{}\[\]()]/, ' ').downcase
+    @search = @search.gsub(/[\n]/, ' ').downcase
+    
     @multiple_words = Array.new
     @single_words = Array.new        
     @neg = Array.new
