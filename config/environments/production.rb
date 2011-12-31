@@ -1,6 +1,6 @@
 YApp::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
-
+  require 'wprdnet'
   # Code is not reloaded between requests
   config.cache_classes = true
 
@@ -9,7 +9,7 @@ YApp::Application.configure do
   config.action_controller.perform_caching = false
 
   # Disable Rails's static asset server (Apache or nginx will already do this)
-  config.serve_static_assets = false
+  config.serve_static_assets = true
 
   # Compress JavaScripts and CSS
   config.assets.compress = true
