@@ -286,7 +286,7 @@ class Plot < ActiveRecord::Base
 ##############################     
    
    def self.create_iframes(ytids)
-     ytids.split(',')
+     ytids = ytids.split(', ')
      result = Array.new
      ytids.each do |y|
    result << "<iframe width='320' height='200' src= http://www.youtube.com/embed/#{y}   frameborder='0' ></iframe>"
@@ -297,7 +297,7 @@ class Plot < ActiveRecord::Base
  
   def self.create_youtubelinks(ytids)
     result = Array.new
-    ytids.split(',')
+    ytids = ytids.split(', ')
     ytids.each do |y|
       result << "<http://www.youtube.com/watch?v=#{y}"
     end
