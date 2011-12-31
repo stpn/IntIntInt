@@ -2,7 +2,7 @@ class Plot < ActiveRecord::Base
 
   @hypernym_storage = Hash.new {|h,k| h[k] = "" }
   @hypernym_array = Array.new
-    @stop_words = %w{a u able about across after all almost also am
+  @stop_words = %w{a u able about across after all almost also am
        among an and any are as at be because been but by can cannot 
        could dear did do does either else ever every for from get got 
          had has have he her hers him his how however i if in into is 
@@ -11,10 +11,12 @@ class Plot < ActiveRecord::Base
          said say says she should since so some than that the their them 
          then there these they this tis to too twas us wants was we were 
          what when where which while who whom why will with would yet you your a b c d e f g h i j k l m n o p q r s t u v w x y z}
+         
+  @boom = Object.new
 
   def self.search(search)
   
-    @search = search.gsub(/[,;:\-{}\[\]()]/, ' ')
+    @search = search.gsub(/[\\n\.,;:\-{}\[\]()]/, ' ').downcase
     @multiple_words = Array.new
     @single_words = Array.new        
     @neg = Array.new
@@ -55,39 +57,55 @@ class Plot < ActiveRecord::Base
     end
         
 # remove the stop_words and return a clean @a1 array    
-    @q2_parsed = @q2.split.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '').downcase) }
+    @q2_parsed = @q2.split.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
     @q2_parsed.each do |q|
       @multiple_words << q
     end
-    
  # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! ADDED STOPWORD CHECKING!!
-    @multiple_words.each do |w|
-      mtch = w.match(/\s/)
-      if mtch.nil?
-      if !@stop_words.include?(w)
+   @multiple_words.each do |w|
+     mtch = w.match(/\s/)
+     if mtch.nil?
+       if !@stop_words.include?(w)
          cont = Metaword.find_by_content(w)
-         p cont
-         if !cont.blank?
+           if !cont.nil?
+             @positive[w] << "#{cont.youtubeid} "
+           else
+             @neg << w
+           end
+       end
+     else
+       cont = Metaword.find_by_content(w)
+       if !cont.nil?
          @positive[w] << "#{cont.youtubeid} "
-       else 
+       else
          @neg << w
        end
      end
    end
-     end
-      
+   
+
+  
+    
     @neg = @neg.join(' ').split(' ').uniq  
+  
+    @neg = @neg.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
 
+    
     @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
+
+    
+    
     Plot.start_hypernymation(@neg_to_pos, 0)
-
-
+    
+    
     @positive = @positive.merge(Plot.hypernyms_to_metawords)
     
+
     
     @positive.each do |k,v|
       @sorted_words << k
     end 
+    
 
 #Sort the words according to init string       
     @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
@@ -97,6 +115,7 @@ class Plot < ActiveRecord::Base
       @result << "#{b}"
     end
     end
+
     return @result
       
   end 
@@ -143,18 +162,17 @@ class Plot < ActiveRecord::Base
      Plot.process_neg_to_pos('adverbs', neg_to_pos['adverbs'], counter, neg_to_pos)
     elsif counter == 3
      Plot.process_neg_to_pos('nouns', neg_to_pos['nouns'], counter, neg_to_pos)
-    elsif counter == 4
+      @hypernym_storage.delete_if{|k,v| v == "" }      
     end
-    @hypernym_storage.delete_if{|k,v| v == "" }
         
   end
     
       
   def self.process_neg_to_pos(pos, words, counter, neg_to_pos)
     words = words.split(' ')
-    p words
+
     words.each do |v|
-        @hypernym_storage[v] << Plot.find_hypernyms(pos,v)
+        @hypernym_storage[v] << Plot.find_hypernyms(pos, v)
       end
         counter = counter + 1  
         p counter      
@@ -165,15 +183,19 @@ class Plot < ActiveRecord::Base
       
       
    def self.find_hypernyms(pos, word)    
+     p word
      p pos  
   #This is a hypernym extractor  
      if pos == 'nouns'    
-      index = WordNet::NounIndex.instance   
-      elsif pos == 'adjs'
+      index = WordNet::NounIndex.instance
+      end   
+      if pos == 'adjs'
       index = WordNet::AdjectiveIndex.instance
-      elsif pos == 'adverbs'
+    end
+      if pos == 'adverbs'
       index = WordNet::AdverbIndex.instance
-      elsif pos == 'verbs'
+    end
+      if pos == 'verbs'
       index = WordNet::VerbIndex.instance
      end  
     @hypers = Array.new
@@ -261,26 +283,28 @@ class Plot < ActiveRecord::Base
            @adverbs = @adverbs.join(' ').split(' ')
            @nouns = @nouns.join(' ').split(' ')
           @new_parts = {"verbs" => @verbs, "adjs" => @adjs, "adverbs" => @adverbs, "nouns" => @nouns}
-         @convert_to_pos ||= @new_parts
+         return @new_parts
 
      end 
 
-       def self.build_pos_hash(parts_of_speech, neg)
-     #Creating hash of parts of speech
+     def self.build_pos_hash(parts_of_speech, neg)
+       #Creating hash of parts of speech
        neg_to_pos = Hash.new {|h,k| h[k] = "" }
        parts_of_speech.each do |k,v|
          if k == "verbs"
-           neg_to_pos ['verbs'] << (neg & v).uniq.join(' ')
+           neg_to_pos["verbs"] << (neg & v).uniq.join(' ')
          elsif k == "adjs"
-           neg_to_pos ['adjs'] << (neg & v).uniq.join(' ')
+           neg_to_pos['adjs'] << (neg & v).uniq.join(' ')
          elsif k == "nouns"
            neg_to_pos['nouns'] << (neg & v).uniq.join(' ')
          elsif k == "adverbs"
-           neg_to_pos ['adverbs'] << (neg & v).uniq.join(' ')
+           neg_to_pos['adverbs'] << (neg & v).uniq.join(' ')
          end
        end
+
        return neg_to_pos
      end
+    
      
 ##############################
 ##############################     
