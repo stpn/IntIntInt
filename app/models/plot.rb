@@ -296,6 +296,7 @@ class Plot < ActiveRecord::Base
  
   def self.create_youtubelinks(ytids)
     result = Array.new
+    ytids.split(',')
     ytids.each do |y|
       result << "<http://www.youtube.com/watch?v=#{y}"
     end
