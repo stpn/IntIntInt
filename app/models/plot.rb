@@ -120,7 +120,7 @@ class Plot < ActiveRecord::Base
         end
         temp_arr = temp_arr.uniq
         temp_arr.each do |t|
-          hypernym_youtubeids[k] << "#{t}, "
+          hypernym_youtubeids[k] << "#{t} "
         end
         temp_arr = temp_arr.clear
       end
