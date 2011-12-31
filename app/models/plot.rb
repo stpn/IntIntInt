@@ -1,4 +1,9 @@
 class Plot < ActiveRecord::Base
+  serialize :chosen_word, Array
+  serialize :youtubeid, Array
+  serialize :content, Array
+  
+  
     
   @hypernym_storage = Hash.new {|h,k| h[k] = "" }
   @hypernym_array = Array.new
@@ -313,7 +318,7 @@ class Plot < ActiveRecord::Base
   def self.create_youtubelinks(ytids)
     result = Array.new
     ytids.each do |y|
-      result << "<http://www.youtube.com/watch?v=#{y}"
+      result << "http://www.youtube.com/watch?v=#{y}"
     end
     return result
   end
