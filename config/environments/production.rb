@@ -1,6 +1,5 @@
 YApp::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
-  require 'wprdnet'
   # Code is not reloaded between requests
   config.cache_classes = true
 
