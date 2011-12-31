@@ -14,6 +14,7 @@ class PlotsController < ApplicationController
   # GET /plots/1.json
   def show
     @plot = Plot.find(params[:id])
+    @words = @plot.chosen_word.split(', ').sort_by { |substr|  (@plot.name).index(substr) }
     @plot_yt = @plot.content.split(', ')
     respond_to do |format|
       format.html # show.html.erb
@@ -41,8 +42,16 @@ class PlotsController < ApplicationController
   # POST /plots.json
   def create
     @plot = Plot.new(params[:plot])
-        @plot.youtubeid = Plot.create_youtubelinks(Plot.search(@plot.name).join(', '))
-        @plot.content = Plot.create_iframes(Plot.search(@plot.name).join(', '))
+    youtubeids = Array.new
+    words = Array.new
+    
+      Plot.search(@plot.name).each do |k,v| 
+          youtubeids << v
+          words << k
+        end        
+        @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
+        @plot.content = (Plot.create_iframes(youtubeids))
+        @plot.chosen_word = words
         @plot.save!
     respond_to do |format|
   

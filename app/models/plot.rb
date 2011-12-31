@@ -1,5 +1,5 @@
 class Plot < ActiveRecord::Base
-
+    
   @hypernym_storage = Hash.new {|h,k| h[k] = "" }
   @hypernym_array = Array.new
   @stop_words = %w{a u able about across after all almost also am
@@ -16,12 +16,12 @@ class Plot < ActiveRecord::Base
 
   def self.search(search)
   
-    @search = search.gsub(/[\\n\.,;:\-{}\[\]()]/, ' ').downcase
+    @search = search.gsub(/[\d\\n\.,;:\-{}\[\]()]/, ' ').downcase
     @multiple_words = Array.new
     @single_words = Array.new        
     @neg = Array.new
     @sorted_words = Array.new
-    @result = Array.new
+    @result = Hash.new{|h,k| h[k] = "" }
     
     @positive = Hash.new{|h,k| h[k] = "" } 
     tgr = EngTagger.new         
@@ -61,7 +61,7 @@ class Plot < ActiveRecord::Base
     @q2_parsed.each do |q|
       @multiple_words << q
     end
- # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! ADDED STOPWORD CHECKING!!
+ # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
    @multiple_words.each do |w|
      mtch = w.match(/\s/)
      if mtch.nil?
@@ -82,26 +82,16 @@ class Plot < ActiveRecord::Base
        end
      end
    end
-   
-
-  
     
-    @neg = @neg.join(' ').split(' ').uniq  
-  
+    @neg = @neg.join(' ').split(' ').uniq    
     @neg = @neg.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
-
     
     @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
-
-    
     
     Plot.start_hypernymation(@neg_to_pos, 0)
     
-    
     @positive = @positive.merge(Plot.hypernyms_to_metawords)
-    
 
-    
     @positive.each do |k,v|
       @sorted_words << k
     end 
@@ -112,9 +102,10 @@ class Plot < ActiveRecord::Base
     
     @sorted_words.each do |s|
       @positive[s].split(' ').each do |b|
-      @result << "#{b}"
+      @result[s] << "#{b}"
     end
     end
+    
 
     return @result
       
@@ -309,19 +300,18 @@ class Plot < ActiveRecord::Base
 ##############################
 ##############################     
    
-   def self.create_iframes(ytids)
-     ytids = ytids.split(', ')
-     result = Array.new
-     ytids.each do |y|
-   result << "<iframe width='320' height='200' src= http://www.youtube.com/embed/#{y}   frameborder='0' ></iframe>"
+ def self.create_iframes(ytids)
+   result = Array.new
+   ytids.each do |y|
+     result << "<iframe width='320' height='200' src= http://www.youtube.com/embed/#{y}   frameborder='0' ></iframe>"
+   end
+   return result
  end
- return result
- end
+ 
  
  
   def self.create_youtubelinks(ytids)
     result = Array.new
-    ytids = ytids.split(', ')
     ytids.each do |y|
       result << "<http://www.youtube.com/watch?v=#{y}"
     end
