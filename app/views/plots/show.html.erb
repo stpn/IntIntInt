@@ -1,0 +1,34 @@
+<p id="notice"><%= notice %></p>
+
+
+<p>
+  <b>Title:</b>
+  <%= @plot.title %>
+</p>
+
+
+<p>
+  <b>Plot:</b>
+  <%= @plot.name %>
+</p>
+
+
+<p>
+  <b>Links:</b>
+  <%= @plot.youtubeid %>
+</p>
+
+<p>
+  <b>Youtubes:</b><br />
+  <% @plot_yt.each do |p| %>
+
+<%= raw(p) %>
+
+	<% end %>
+</p>
+
+
+
+
+<%= link_to 'Edit', edit_plot_path(@plot) %> |
+<%= link_to 'Back', plots_path %>

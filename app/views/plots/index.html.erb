@@ -1,0 +1,12 @@
+<h1>Videos requested so far</h1>
+
+
+<div style ="border:2px solid green; width:300px; padding: 20px; background: #66ffaa">
+<%= link_to 'New Video Request', new_plot_path , {:style=>'color:red'}%></div>	<br />
+
+
+<% @plots.each do |plot| %>
+    <li><%= link_to plot.title, plot_path(plot.id), {:style=>'color:purple'} %></li>
+<br />
+<% end %>
+

@@ -42,5 +42,9 @@ class Metaword < ActiveRecord::Base
     # end
   end
 
+  def self.remove_all_duplicates
+
+  (Metaword.all - Metaword.all.uniq_by{|r| [r.content, r.youtubeid]}).each{ |d| d.destroy }
+end
 
 end

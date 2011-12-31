@@ -12,9 +12,11 @@ gem 'thin'
 gem 'heroku'
 gem 'pg', :group => [:production]
 gem 'sqlite3', :group => [:development, :test]
-
 gem 'jquery-rails'
 
+gem 'rwordnet'
+gem 'engtagger'
+gem 'nokogiri'
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
 group :test do

@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YApp</title>
-<h2>	<%= link_to "Rate the comments", :homepage %></h2>
-	<%= link_to "Users", users_path %>
+  <title>AUV Project</title>
+  <div id="nav"  style ="border:2px solid green; width:300px; padding: 20px; background: #99ccff">
+	<%= link_to "View registered users", users_path, {:style=>'color:blue'} %> |
+	
+       <% if current_user %>
+       <%= link_to "Edit Profile", edit_user_path(current_user.id)%>
+       <%= link_to "Logout", :logout%>
+       <% else %>
+   	   <%= link_to "Register", new_user_path, {:style=>'color:purple'}%>  | 
+        <%= link_to "Login", :login, {:style=>'color:green'} %> 
+       <% end %>
+   </div>	<br />
+<div style ="border:2px solid green; width:300px; padding: 20px; background: #fffccc">
+<h2>	<%= link_to "Rate the comments", :homepage %></h2></div><br />
+<div style ="border:2px solid green; width:300px; padding: 20px; background: #cccfff">
+<font color="red"><%= link_to "Request videos", plots_path, {:style=>'color:red'} %> </font></div><br />
+	
   <%= stylesheet_link_tag    "application" %>
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
 </head>
 <body>
 	
-    <div id="nav">
-        <% if current_user %>
-        <%= link_to "Edit Profile", edit_user_path(current_user.id)%>
-        <%= link_to "Logout", :logout%>
-        <% else %>
-        <%= link_to "Register", new_user_path%> | 
-        <%= link_to "Login", :login %>
-        <% end %>
-    </div>
+ 
 <%= yield %>
 
 </body>

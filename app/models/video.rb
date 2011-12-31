@@ -256,5 +256,9 @@ class Video < ActiveRecord::Base
                           video = Video.find_all_by_download(true)
                           return video
                         end
+                        
+                           def self.yt_session
+                              @yt_session ||= YouTubeIt::Client.new( :username => "auvproj@gmail.com", :password => "unsupervised", :dev_key => "AI39si4iWjIA8z-kwuLxWbEfu-4WUfvzi8LxuguBvxgSl2VaUoYDj_L_J8QRBsZivSH92msVpJPUMRuRegY1mp_mh57X32Mh0g")
+                            end
 
                         end
