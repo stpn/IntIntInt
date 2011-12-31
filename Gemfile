@@ -17,6 +17,8 @@ gem 'jquery-rails'
 gem 'rwordnet'
 gem 'engtagger'
 gem 'nokogiri'
+
+gem 'hoe', '~> 1.5.1'
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
 group :test do
