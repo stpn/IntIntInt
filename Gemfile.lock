@@ -1,3 +1,8 @@
+PATH
+  remote: vendor/gems/rwordnet-0.1.3
+  specs:
+    rwordnet (0.1.3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -112,7 +117,6 @@ GEM
     rubyforge (2.0.4)
       json_pure (>= 1.1.7)
     rubyzip (0.9.5)
-    rwordnet (0.1.3)
     simple_oauth (0.1.5)
     sprockets (2.0.3)
       hike (~> 1.2)
@@ -160,7 +164,7 @@ DEPENDENCIES
   nokogiri
   pg
   rails (= 3.1.1)
-  rwordnet
+  rwordnet (= 0.1.3)!
   sqlite3
   thin
   turn
