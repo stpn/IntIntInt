@@ -14,7 +14,9 @@ class PlotsController < ApplicationController
   # GET /plots/1.json
   def show
     @plot = Plot.find(params[:id])
-    @words = @plot.chosen_word.sort_by { |substr|  (@plot.name).index(substr) }
+    string = @plot.name
+    @words = @plot.chosen_word
+#    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @plot }
