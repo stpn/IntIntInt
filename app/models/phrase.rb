@@ -31,7 +31,7 @@ end
    
    def self.timecodes_to_columns
        Phrase.all.each do |word|
-         word.timecode = word.content.scan(/(.\d:\d.)/).join(' ')
+         word.timecode = word.content.scan(/(\d+:\d+)/).join(' ')
          word.save!
        end
      end
