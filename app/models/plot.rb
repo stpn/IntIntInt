@@ -106,21 +106,20 @@ class Plot < ActiveRecord::Base
 
 #Sort the words according to init string       
     @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
-    
     @sorted_words.each do |s|
       @positive[s].split(' ').each do |b|
       @result[s] << "#{b} "
     end
     end
-    
-
     return @result
-      
   end 
 
 
 
-#Collect Youtube_ids for found hypernyms       
+
+##########Collect Youtube_ids for found hypernyms###########
+########################################################### 
+       
   def self.hypernyms_to_metawords
     temp_arr = Array.new
     hypernym_youtubeids = Hash.new {|h,k| h[k] = "" }
@@ -150,7 +149,6 @@ class Plot < ActiveRecord::Base
   
 ########FIND HYPERNYMS#########
 ##############################  
-  
   def self.start_hypernymation(neg_to_pos, counter) 
     if counter == 0
       Plot.process_neg_to_pos('verbs', neg_to_pos['verbs'], counter, neg_to_pos)
@@ -213,10 +211,8 @@ class Plot < ActiveRecord::Base
     
     end
 
-
 ########POS CONVERTING#########
 ##############################
-
     def self.convert_to_pos(tagged_by_engtagger)      
          @verbs = Array.new
          @nouns = Array.new
@@ -302,8 +298,6 @@ class Plot < ActiveRecord::Base
 
        return neg_to_pos
      end
-    
-     
 ##############################
 ##############################     
    
@@ -315,9 +309,7 @@ class Plot < ActiveRecord::Base
    return result
  end
  
- 
- 
-  def self.create_youtubelinks(ytids)
+   def self.create_youtubelinks(ytids)
     result = Array.new
     ytids.each do |y|
       result << "http://www.youtube.com/watch?v=#{y}"

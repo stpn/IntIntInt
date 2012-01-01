@@ -2,7 +2,7 @@ class Phrase < ActiveRecord::Base
 
 @phraseid = 0
 
- serialize :timecode, Array
+ #serialize :timecode, Array
 
 
 belongs_to :video
