@@ -2,6 +2,9 @@ class Phrase < ActiveRecord::Base
 
 @phraseid = 0
 
+ serialize :timecode, Array
+
+
 belongs_to :video
 has_many :connotations
 validates_associated :connotations
@@ -33,11 +36,9 @@ end
        Phrase.all.each do |word|
          @content_string = word.content.scan(/(\d+:\d+)/)
          @content_string.each do |c|
-           if word.timecode.nil? 
-             word.timecode = c.to_s
-           else
-             word.timecode += c.to_s
-           end
+        
+             word.timecode << c.join(' ')
+           
          end
          word.save!
        end
