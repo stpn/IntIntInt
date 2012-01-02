@@ -7,7 +7,7 @@ class Plot < ActiveRecord::Base
     
   @hypernym_storage = Hash.new {|h,k| h[k] = "" }
   @hypernym_array = Array.new
-  @stop_words = %w{a u able about across after all almost also am
+  @stop_words = %w{able about across after all almost also am
        among an and any are as at be because been but by can cannot 
        could dear did do does either else ever every for from get got 
          had has have he her hers him his how however i if in into is 
@@ -22,7 +22,8 @@ class Plot < ActiveRecord::Base
   def self.search(search)
   
     @search = search.gsub(/[\.,;:\-{}\[\]()]/, ' ').downcase
-    @search = @search.gsub(/[\n]/, ' ').downcase
+    @search = @search.gsub(/\n/, ' ').downcase
+    
     
     @multiple_words = Array.new
     @single_words = Array.new        
@@ -331,23 +332,6 @@ class Plot < ActiveRecord::Base
     return result
   end
   
-  
-  
-#######Create HTMLs############
-##############################     
-
-  def self.pull_timecodes(ytids)
-    timecodes = Array.new
-    ytids.each do |y|      
-      timecode = Phrase.find_by_youtubeid(y).timecode
-      mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
-      if !mtch.nil?
-        timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
-      end
-      timecodes << timecode
-    end
-    return timecodes
-  end
 
 
 end
