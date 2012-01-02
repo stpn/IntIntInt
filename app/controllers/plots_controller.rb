@@ -49,7 +49,8 @@ class PlotsController < ApplicationController
       Plot.search(@plot.name).each do |k,v| 
           youtubeids << v
           words << k
-        end        
+        end
+        youtubeids = Plot.pull_youtubeids_with_timecodes(youtubeids)        
         @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
         @plot.content = (Plot.create_iframes(youtubeids))
         @plot.chosen_word = words

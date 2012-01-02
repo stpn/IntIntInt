@@ -9,32 +9,39 @@ validates_associated :connotations
 
 
 
-def self.load_all_comments
-  comments_array = Array.new
-  Video.destroy_all "comments = '--- []\n'"
-  videos_with_non_nil_comments = Video.find_all_by_download(true)
-  videos_with_non_nil_comments.each do |video|
-    comments_string = video.comments
-    comments_array = comments_string.scan(/PARSEFROMHERE\s(.*?)\sENDPARSEFROMHERE/m)
-    comments_array.each do |a|
-      phrase = Phrase.create
-      phrase.content = a
-      phrase.youtubeid = video.content
-      phrase.video_id = video.id
-      phrase.save!
+  def self.load_all_comments
+    comments_array = Array.new
+    Video.destroy_all "comments = '--- []\n'"
+    videos_with_non_nil_comments = Video.find_all_by_download(true)
+    videos_with_non_nil_comments.each do |video|
+      comments_string = video.comments
+      comments_array = comments_string.scan(/PARSEFROMHERE\s(.*?)\sENDPARSEFROMHERE/m)
+      comments_array.each do |a|
+        phrase = Phrase.create
+        phrase.content = a
+        phrase.youtubeid = video.content
+        phrase.video_id = video.id
+        phrase.save!
+      end
     end
+    Phrase.timecodes_to_columns
+    Phrase.remove_junk
   end
-  Phrase.timecodes_to_columns
-  Phrase.remove_junk
-end
 
    
-   def self.timecodes_to_columns
-       Phrase.all.each do |word|
-         word.timecode = word.content.scan(/(\d+:\d+)/).join(' ')
-         word.save!
-       end
-     end
+  def self.timecodes_to_columns
+    Phrase.all.each do |phrase|
+      mtch =  phrase.content.match(/(\d+:\d\d-\d+:\d\d)/)
+      mtch2 =  phrase.content.match(/(\d+:\d+)/)      
+      if !mtch.nil?
+        phrase.timecode = phrase.content.scan(/(\d+:\d\d-\d+:\d\d)/).join(' ')
+        phrase.save!
+      elsif !mtch2.nil?
+        phrase.timecode = phrase.content.scan(/(\d+:\d+)/).join(' ')
+        phrase.save!
+      end
+    end
+  end
      
     def self.all_relevant_phrases
       phrase = Phrase.find(:all, :conditions => "rating IS NULL")

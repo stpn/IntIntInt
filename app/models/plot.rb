@@ -108,13 +108,11 @@ class Plot < ActiveRecord::Base
     @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
     @sorted_words.each do |s|
       @positive[s].split(' ').each do |b|
-      @result[s] << "#{b} "
+      @result[s] << "#{b}"
     end
     end
     return @result
   end 
-
-
 
 
 ##########Collect Youtube_ids for found hypernyms###########
@@ -298,8 +296,24 @@ class Plot < ActiveRecord::Base
 
        return neg_to_pos
      end
-##############################
+     
+#######Create HTMLs############
 ##############################     
+
+  def self.pull_youtubeids_with_timecodes(ytids)
+      result = Array.new
+      ytids.each do |y|      
+        timecode = Phrase.find_by_youtubeid(y).timecode
+        mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
+        if !mtch.nil?
+          timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+        end
+          timecode = timecode[/(\d+):(\d\d)/]
+          timecode = '#t='+$1+'m'+$2+'s'
+        result << "#{y}#{timecode}"
+      end
+      return result
+    end
    
  def self.create_iframes(ytids)
    result = Array.new
@@ -311,10 +325,29 @@ class Plot < ActiveRecord::Base
  
    def self.create_youtubelinks(ytids)
     result = Array.new
-    ytids.each do |y|
+    ytids.each do |y|   
       result << "http://www.youtube.com/watch?v=#{y}"
     end
     return result
   end
+  
+  
+  
+#######Create HTMLs############
+##############################     
+
+  def self.pull_timecodes(ytids)
+    timecodes = Array.new
+    ytids.each do |y|      
+      timecode = Phrase.find_by_youtubeid(y).timecode
+      mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
+      if !mtch.nil?
+        timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+      end
+      timecodes << timecode
+    end
+    return timecodes
+  end
+
 
 end
