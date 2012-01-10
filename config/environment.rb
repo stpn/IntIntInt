@@ -5,3 +5,5 @@ require 'rails_extensions'
 
 # Initialize the rails application
 YApp::Application.initialize!
+
+

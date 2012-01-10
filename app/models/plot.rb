@@ -76,20 +76,16 @@ class Plot < ActiveRecord::Base
        if !@stop_words.include?(w)
          cont = Metaword.find_by_content(w)
            if !cont.nil?
+             mtch = @positive[w].match(/#{cont.youtubeid}/)
+              if mtch.nil?           
              @positive[w] << "#{cont.youtubeid} "
+           end
            else
              @neg << w
            end
        end
-     else
-       cont = Metaword.find_by_content(w)
-       if !cont.nil?
-         @positive[w] << "#{cont.youtubeid} "
-       else
-         @neg << w
-       end
      end
-   end
+    end
     
     @neg = @neg.join(' ').split(' ').uniq    
     @neg = @neg.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
@@ -97,6 +93,7 @@ class Plot < ActiveRecord::Base
     @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
     
     Plot.start_hypernymation(@neg_to_pos, 0)
+    @boom = @positive
     
     @positive = @positive.merge(Plot.hypernyms_to_metawords)
 
@@ -109,10 +106,11 @@ class Plot < ActiveRecord::Base
     @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
     @sorted_words.each do |s|
       @positive[s].split(' ').each do |b|
-      @result[s] << "#{b}"
+      @result[s] << "#{b} "
     end
     end
     return @result
+# return @boom
   end 
 
 
@@ -305,14 +303,20 @@ class Plot < ActiveRecord::Base
       result = Array.new
       ytids.each do |y|      
         timecode = Phrase.find_by_youtubeid(y).timecode
-        mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
-        if !mtch.nil?
-          timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+        mtch2 = timecode.match(/(\d+:\d\d)/)
+        if !mtch2.nil?
+          mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
+          if !mtch.nil?
+            timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+            timecode = timecode[/(\d+):(\d\d)/]
+            timecode = '#t='+$1+'m'+$2+'s'
+          else
+            timecode = timecode[/(\d+):(\d\d)/]
+            timecode = '#t='+$1+'m'+$2+'s'
+          end
+          result << "#{y}#{timecode}"
         end
-          timecode = timecode[/(\d+):(\d\d)/]
-          timecode = '#t='+$1+'m'+$2+'s'
-        result << "#{y}#{timecode}"
-      end
+    end
       return result
     end
    

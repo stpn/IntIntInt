@@ -17,6 +17,7 @@ gem 'jquery-rails'
 gem 'rwordnet', '0.1.3', :path => 'vendor/gems/rwordnet-0.1.3'
 gem 'engtagger'
 gem 'nokogiri'
+gem  'activerecord-import'
 
 gem 'hoe', '~> 1.5.1'
 # Bundle edge Rails instead:

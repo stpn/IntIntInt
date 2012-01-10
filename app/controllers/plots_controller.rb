@@ -44,10 +44,11 @@ class PlotsController < ApplicationController
   def create
     @plot = Plot.new(params[:plot])
     youtubeids = Array.new
-    words = Array.new
-    
-      Plot.search(@plot.name).each do |k,v| 
-          youtubeids << v
+    words = Array.new    
+      Plot.search(@plot.name).each do |k,v|
+        v.split(' ').each do |f|
+          youtubeids << f
+        end
           words << k
         end
         youtubeids = Plot.pull_youtubeids_with_timecodes(youtubeids)        
