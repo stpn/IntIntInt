@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120101000957) do
+ActiveRecord::Schema.define(:version => 20120110005215) do
 
   create_table "comments", :force => true do |t|
     t.text     "content"
@@ -95,7 +95,7 @@ ActiveRecord::Schema.define(:version => 20120101000957) do
     t.datetime "updated_at"
     t.string   "title"
     t.text     "youtubeid"
-    t.string   "chosen_word"
+    t.text     "chosen_word", :default => "--- []\n"
   end
 
   create_table "user_sessions", :force => true do |t|
