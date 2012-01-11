@@ -21,8 +21,11 @@ class Plot < ActiveRecord::Base
 
   def self.search(search)
   
-    @search = search.gsub(/[\.,;:\-{}\[\]()]/, ' ').downcase
+    @search = search.gsub(/[\.,;:\-{}\[\]()\d]/, ' ').downcase
     @search = @search.gsub(/\n/, ' ').downcase
+    @search = @search.gsub(/\d{2,}/, ' ').downcase
+    @search = @search.gsub(/\s{2,}/, '').downcase
+    
     
     
     @multiple_words = Array.new
@@ -93,23 +96,23 @@ class Plot < ActiveRecord::Base
     @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
     
     Plot.start_hypernymation(@neg_to_pos, 0)
-    @boom = @positive
+  #  @boom = @positive
     
     @positive = @positive.merge(Plot.hypernyms_to_metawords)
 
     @positive.each do |k,v|
       @sorted_words << k
     end 
+ #   @boom = @sorted_words 
     
-
-#Sort the words according to init string       
-    @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
-    @sorted_words.each do |s|
-      @positive[s].split(' ').each do |b|
-      @result[s] << "#{b} "
-    end
-    end
-    return @result
+   # Sort the words according to init string       
+       @sorted_words = @sorted_words.sort_by { |substr| @search.index(substr) }
+       @sorted_words.each do |s|
+         @positive[s].split(' ').each do |b|
+         @result[s] << "#{b} "
+       end
+       end
+       return @result
 # return @boom
   end 
 
@@ -305,17 +308,17 @@ class Plot < ActiveRecord::Base
         timecode = Phrase.find_by_youtubeid(y).timecode
         mtch2 = timecode.match(/(\d+:\d\d)/)
         if !mtch2.nil?
-          mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
-          if !mtch.nil?
-            timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
-            timecode = timecode[/(\d+):(\d\d)/]
-            timecode = '#t='+$1+'m'+$2+'s'
-          else
+          # mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
+          #        if !mtch.nil?
+          #          timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+          #          timecode = timecode[/(\d+):(\d\d)/]
+          #          timecode = '#t='+$1+'m'+$2+'s'
+          #        else
             timecode = timecode[/(\d+):(\d\d)/]
             timecode = '#t='+$1+'m'+$2+'s'
           end
           result << "#{y}#{timecode}"
-        end
+#        end
     end
       return result
     end
