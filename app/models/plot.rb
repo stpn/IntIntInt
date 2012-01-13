@@ -1,4 +1,6 @@
 class Plot < ActiveRecord::Base
+  include ParsingHelpers
+  
   serialize :chosen_word, Array
   serialize :youtubeid, Array
   serialize :content, Array
@@ -7,20 +9,12 @@ class Plot < ActiveRecord::Base
     
   @hypernym_storage = Hash.new {|h,k| h[k] = "" }
   @hypernym_array = Array.new
-  @stop_words = %w{able about across after all almost also am
-       among an and any are as at be because been but by can cannot 
-       could dear did do does either else ever every for from get got 
-         had has have he her hers him his how however i if in into is 
-         it its just least let like likely may me might most must my 
-         neither no nor not of off often on only or other our own rather re 
-         said say says she should since so some than that the their them 
-         then there these they this tis to too twas us wants was we were 
-         what when where which while who whom why will with would yet you your a b c d e f g h i j k l m n o p q r s t u v w x y z}
+  
          
   @boom = Object.new
 
   def self.search(search)
-  
+      
     @search = search.gsub(/[\.,;:\-{}\[\]()\d]/, ' ').downcase
     @search = @search.gsub(/\n/, ' ').downcase
     @search = @search.gsub(/\d{2,}/, ' ').downcase
@@ -63,12 +57,15 @@ class Plot < ActiveRecord::Base
 #Now create a string without the matched words
     @q2 = @search     
      @multiple_words.each do |a|
-        @q2 = @q2.gsub(/#{a}'\w/,'')
+#        @q2 = @q2.gsub(/#{a}'\w/,'')
         @q2 = @q2.gsub(/#{a}/,'')                
     end
-        
+       
+       p @q2
+       
 # remove the stop_words and return a clean @a1 array    
-    @q2_parsed = @q2.split.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
+    @q2 = remove_stop_words(@q2)
+    @q2_parsed = 
     @q2_parsed.each do |q|
       @multiple_words << q
     end
@@ -76,7 +73,7 @@ class Plot < ActiveRecord::Base
    @multiple_words.each do |w|
      mtch = w.match(/\s/)
      if mtch.nil?
-       if !@stop_words.include?(w)
+       if !stop_words.include?(w)
          cont = Metaword.find_by_content(w)
            if !cont.nil?
              mtch = @positive[w].match(/#{cont.youtubeid}/)
@@ -91,7 +88,7 @@ class Plot < ActiveRecord::Base
     end
     
     @neg = @neg.join(' ').split(' ').uniq    
-    @neg = @neg.reject { |w| @stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
+    neg = remove_stop_words(neg)
     
     @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
     
@@ -129,7 +126,7 @@ class Plot < ActiveRecord::Base
 #Still have to decide whether to add the stopword checking:: ADDED
         mtch = word.match(/\s/)
         if mtch.nil?
-        if !@stop_words.include?(word)
+        if !stop_words.include?(word)
         metaword_matches = Metaword.find_all_by_content(word)        
         metaword_matches.each do |m|
           temp_arr << m.youtubeid # + " #{m.content}"
