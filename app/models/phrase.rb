@@ -6,9 +6,6 @@ belongs_to :video
 has_many :connotations
 validates_associated :connotations
 
-
-
-
   def self.load_all_comments
     comments_array = Array.new
     Video.destroy_all "comments = '--- []\n'"
