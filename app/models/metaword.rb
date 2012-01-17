@@ -5,7 +5,8 @@ class Metaword < ActiveRecord::Base
 
   def self.load_all_keywords
 #    Video.destroy_all "comments = '--- []\n'"
-    videos_with_non_nil_comments = Video.find_all_by_download(true)
+#    videos_with_non_nil_comments = Video.find_all_by_download(true)
+    videos_with_non_nil_comments = Video.find(:all, :conditions => "comments IS NOT NULL")
     videos_with_non_nil_comments.each do |v|
       if !v.keywords.nil?
         kw = v.keywords.split("\n- ")

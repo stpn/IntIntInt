@@ -9,7 +9,8 @@ validates_associated :connotations
   def self.load_all_comments
     comments_array = Array.new
     Video.destroy_all "comments = '--- []\n'"
-    videos_with_non_nil_comments = Video.find_all_by_download(true)
+#    videos_with_non_nil_comments = Video.find_all_by_download(true)
+    videos_with_non_nil_comments = Video.find(:all, :conditions => "comments IS NOT NULL")
     videos_with_non_nil_comments.each do |video|
       comments_string = video.comments
       comments_array = comments_string.scan(/PARSEFROMHERE\s(.*?)\sENDPARSEFROMHERE/m)
