@@ -9,7 +9,7 @@ class Plot < ActiveRecord::Base
   @hypernym_storage = stringed_hash
   @hypernym_array = Array.new
 
-#  @boom = Object.new
+  #  @boom = Object.new
 
   def self.search(search)
     @neg = Array.new
@@ -100,7 +100,7 @@ class Plot < ActiveRecord::Base
         @multiple_words << k.gsub(/[\?\!\.]/,'')
       end
     end
-    
+
     p @multiple_words
 
     #better to create another object?
@@ -126,95 +126,95 @@ class Plot < ActiveRecord::Base
     return @multiple_words.uniq
 
   end
-  
-  
+
+
   ########POS CONVERTING#########
-   ##############################
-   def self.convert_to_pos(tagged_by_engtagger)
-     @verbs = Array.new
-     @nouns = Array.new
-     @adverbs = Array.new
-     @adjs = Array.new
-     @adj_string =  %w{jj jjr jjs}
-     @noun_string = %w{nn nnp nnps}
-     @adverb_string = %w{rb rbr rbs rp}
-     @verb_string = %w{md vb vbd vbg vbn vbp vbz}
+  ##############################
+  def self.convert_to_pos(tagged_by_engtagger)
+    @verbs = Array.new
+    @nouns = Array.new
+    @adverbs = Array.new
+    @adjs = Array.new
+    @adj_string =  %w{jj jjr jjs}
+    @noun_string = %w{nn nnp nnps}
+    @adverb_string = %w{rb rbr rbs rp}
+    @verb_string = %w{md vb vbd vbg vbn vbp vbz}
 
-     # Parse parts of speech
-     doc = Nokogiri::XML('<xml>'+tagged_by_engtagger+'</xml>')
-     @parts_of_speech = doc.xpath('/xml').map do |i|
-       {'jj' => i.xpath('jj').collect(&:text),
-        'jjr' => i.xpath('jjr').collect(&:text),
-        'jjs' => i.xpath('jjs').collect(&:text),
+    # Parse parts of speech
+    doc = Nokogiri::XML('<xml>'+tagged_by_engtagger+'</xml>')
+    @parts_of_speech = doc.xpath('/xml').map do |i|
+      {'jj' => i.xpath('jj').collect(&:text),
+       'jjr' => i.xpath('jjr').collect(&:text),
+       'jjs' => i.xpath('jjs').collect(&:text),
 
-        'nn' => i.xpath('nn').collect(&:text),
-        'nnp' => i.xpath('nnp').collect(&:text),
-        'nnps' => i.xpath('nnps').collect(&:text),
+       'nn' => i.xpath('nn').collect(&:text),
+       'nnp' => i.xpath('nnp').collect(&:text),
+       'nnps' => i.xpath('nnps').collect(&:text),
 
-        'rb' => i.xpath('rb').collect(&:text),
-        'rbr' => i.xpath('rbr').collect(&:text),
-        'rbs' => i.xpath('rbs').collect(&:text),
-        'rp' => i.xpath('rp').collect(&:text),
+       'rb' => i.xpath('rb').collect(&:text),
+       'rbr' => i.xpath('rbr').collect(&:text),
+       'rbs' => i.xpath('rbs').collect(&:text),
+       'rp' => i.xpath('rp').collect(&:text),
 
-        'md' => i.xpath('md').collect(&:text),
-        'vb' => i.xpath('vb').collect(&:text),
-        'vbd' => i.xpath('vbd').collect(&:text),
-        'vbg' => i.xpath('vbg').collect(&:text),
-        'vbn' => i.xpath('vbn').collect(&:text),
-        'vbp' => i.xpath('vbp').collect(&:text),
-        'vbz' => i.xpath('vbz').collect(&:text)
-        }
-     end
+       'md' => i.xpath('md').collect(&:text),
+       'vb' => i.xpath('vb').collect(&:text),
+       'vbd' => i.xpath('vbd').collect(&:text),
+       'vbg' => i.xpath('vbg').collect(&:text),
+       'vbn' => i.xpath('vbn').collect(&:text),
+       'vbp' => i.xpath('vbp').collect(&:text),
+       'vbz' => i.xpath('vbz').collect(&:text)
+       }
+    end
 
-     @parts_of_speech.each do |i|
-       i.each do |k,v|
-         if v.empty?
-           i.delete(k)
-         end
-       end
-     end
+    @parts_of_speech.each do |i|
+      i.each do |k,v|
+        if v.empty?
+          i.delete(k)
+        end
+      end
+    end
 
-     #Fill array of parts of speech
-     @parts_of_speech.each do |i|
-       i.each do |k,v|
-         if @verb_string.include?(k)
-           @verbs << v
-         elsif @adj_string.include?(k)
-           @adjs << v
-         elsif @adverb_string.include?(k)
-           @adverbs << v
-         elsif @noun_string.include?(k)
-           @nouns << v
-         end
-       end
-     end
+    #Fill array of parts of speech
+    @parts_of_speech.each do |i|
+      i.each do |k,v|
+        if @verb_string.include?(k)
+          @verbs << v
+        elsif @adj_string.include?(k)
+          @adjs << v
+        elsif @adverb_string.include?(k)
+          @adverbs << v
+        elsif @noun_string.include?(k)
+          @nouns << v
+        end
+      end
+    end
 
-     @verbs = @verbs.join(' ').split(' ')
-     @adjs = @adjs.join(' ').split(' ')
-     @adverbs = @adverbs.join(' ').split(' ')
-     @nouns = @nouns.join(' ').split(' ')
-     @new_parts = {"verbs" => @verbs, "adjs" => @adjs, "adverbs" => @adverbs, "nouns" => @nouns}
-     return @new_parts
+    @verbs = @verbs.join(' ').split(' ')
+    @adjs = @adjs.join(' ').split(' ')
+    @adverbs = @adverbs.join(' ').split(' ')
+    @nouns = @nouns.join(' ').split(' ')
+    @new_parts = {"verbs" => @verbs, "adjs" => @adjs, "adverbs" => @adverbs, "nouns" => @nouns}
+    return @new_parts
 
-   end
+  end
 
-   def self.build_pos_hash(parts_of_speech, neg)
-     #Creating hash of parts of speech
-     neg_to_pos = stringed_hash
-     parts_of_speech.each do |k,v|
-       if k == "verbs"
-         neg_to_pos["verbs"] << (neg & v).uniq.join(' ')
-       elsif k == "adjs"
-         neg_to_pos['adjs'] << (neg & v).uniq.join(' ')
-       elsif k == "nouns"
-         neg_to_pos['nouns'] << (neg & v).uniq.join(' ')
-       elsif k == "adverbs"
-         neg_to_pos['adverbs'] << (neg & v).uniq.join(' ')
-       end
-     end
+  def self.build_pos_hash(parts_of_speech, neg)
+    #Creating hash of parts of speech
+    neg_to_pos = stringed_hash
+    parts_of_speech.each do |k,v|
+      if k == "verbs"
+        neg_to_pos["verbs"] << (neg & v).uniq.join(' ')
+      elsif k == "adjs"
+        neg_to_pos['adjs'] << (neg & v).uniq.join(' ')
+      elsif k == "nouns"
+        neg_to_pos['nouns'] << (neg & v).uniq.join(' ')
+      elsif k == "adverbs"
+        neg_to_pos['adverbs'] << (neg & v).uniq.join(' ')
+      end
+    end
 
-     return neg_to_pos
-   end
+    return neg_to_pos
+  end
 
   ##########Collect Youtube_ids for found hypernyms###########
   ###########################################################
@@ -348,5 +348,20 @@ class Plot < ActiveRecord::Base
     end
     return result
   end
+
+  ##########Check sentiment value of phrase by comparing with words#######
+  ########################################################################
+
+  def self.find_sentiment_value(array)
+    rating = 0
+    array.each do |w|
+      found_in_sentiment = Word.find_by_content(w)
+      unless found_in_sentiment.nil?
+        rating = rating + found_in_sentiment.rating
+      end
+    end
+    return rating
+  end
+
 
 end

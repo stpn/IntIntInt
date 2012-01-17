@@ -55,6 +55,7 @@ class PlotsController < ApplicationController
         @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
         @plot.content = (Plot.create_iframes(youtubeids))
         @plot.chosen_word = words
+        @plot.sentiment_value = Plot.find_sentiment_value(words)
         @plot.save!
     respond_to do |format|
   
