@@ -9,7 +9,7 @@ class Plot < ActiveRecord::Base
   @hypernym_storage = stringed_hash
   @hypernym_array = Array.new
 
-  #  @boom = Object.new
+  @boom = Object.new
 
   def self.search(search)
     @neg = Array.new
@@ -28,7 +28,9 @@ class Plot < ActiveRecord::Base
           if !cont.nil?
             mtch = @positive[w].match(/#{cont.youtubeid}/)
             if mtch.nil?
-              @positive[w] << "#{cont.youtubeid} "
+              cont.videos.each do |cv|
+                @positive[w] << "#{cv.content} "
+              end
             end
           else
             @neg << w
@@ -57,8 +59,9 @@ class Plot < ActiveRecord::Base
         @result[s] << "#{b} "
       end
     end
-    return @result
-    # return @boom
+    @boom = @positive
+    #   return @result
+    return @boom
   end
 
 
@@ -68,9 +71,12 @@ class Plot < ActiveRecord::Base
   def self.clean_search(query)
 
     @search = query.gsub(/[\.,;:\-{}\[\]()\d]/, ' ').downcase
+    #think if you need this extreme:
+    @search = @search.gsub(/[^a-zA-Z]/, ' ').downcase
     @search = @search.gsub(/\n/, ' ').downcase
     @search = @search.gsub(/\d{2,}/, ' ').downcase
-    @search = @search.gsub(/\s{2,}/, '').downcase
+    @search = @search.gsub(/\s{2,}/, ' ').downcase
+    @search = @search.gsub(/\\/, '').downcase
     return @search
   end
 
@@ -79,8 +85,7 @@ class Plot < ActiveRecord::Base
 
 
   def self.process_query(query)
-    @search = clean_search(query)
-
+    @search = Plot.clean_search(query)
     @multiple_words = Array.new
     @single_words = Array.new
 
@@ -90,7 +95,6 @@ class Plot < ActiveRecord::Base
 
     @single_words = @search.gsub(/[\?\!\.]/,'')
     @single_words = @single_words.gsub(/('\w)/,'').split(' ').uniq
-
     @parts_of_speech ||= Plot.convert_to_pos(@tagged)
 
     # This is creation of the array with unique words
@@ -101,7 +105,7 @@ class Plot < ActiveRecord::Base
       end
     end
 
-    p @multiple_words
+    @multiple_words = Plot.remove_multiple_word_duplicates(@multiple_words)
 
     #better to create another object?
     @single_words.each do |word|
@@ -126,6 +130,30 @@ class Plot < ActiveRecord::Base
     return @multiple_words.uniq
 
   end
+
+
+  #########CLEANS NOUN PHRASES FROM REPEATED WORDS######
+  #####################################################
+
+  def self.remove_multiple_word_duplicates(multiple_words_array)
+    temp_arr = Array.new
+    multiple_words2 = multiple_words_array
+    multiple_words_array.each do |mw|
+      multiple_words2.each do |bb|
+        if mw!=bb
+          b = bb.include? mw
+          if b == true
+            #CHANGE TO MAKE RESULTING PHRASES LONGER:
+            # temp_arr << mw
+            temp_arr << bb
+          end
+        end
+      end
+    end
+    result = multiple_words_array - temp_arr
+  end
+
+
 
 
   ########POS CONVERTING#########
@@ -224,20 +252,21 @@ class Plot < ActiveRecord::Base
     hypernym_youtubeids = stringed_hash
     @hypernym_storage.each do |k,v|
       v.split(',').each do |word|
-
         #Still have to decide whether to add the stopword checking:: ADDED
         mtch = word.match(/\s/)
         if mtch.nil?
           if !stop_words.include?(word)
             metaword_matches = Metaword.find_all_by_content(word)
             metaword_matches.each do |m|
-              temp_arr << m.youtubeid # + " #{m.content}"
+              m.videos.each do |mw|
+                temp_arr << mw.content # + " #{m.content}"
+              end
+              temp_arr = temp_arr.uniq
+              temp_arr.each do |t|
+                hypernym_youtubeids[k] << "#{t} "
+              end
+              temp_arr = temp_arr.clear
             end
-            temp_arr = temp_arr.uniq
-            temp_arr.each do |t|
-              hypernym_youtubeids[k] << "#{t} "
-            end
-            temp_arr = temp_arr.clear
           end
         end
       end
@@ -351,16 +380,194 @@ class Plot < ActiveRecord::Base
 
   ##########Check sentiment value of phrase by comparing with words#######
   ########################################################################
+  #The general logic is to assign 0.0001 when the word is not found in the sentiment lookup table
+  #
 
-  def self.find_sentiment_value(array)
+  def self.find_sentiment_value(comment)
+    found_value = false
     rating = 0
-    array.each do |w|
-      found_in_sentiment = Word.find_by_content(w)
-      unless found_in_sentiment.nil?
-        rating = rating + found_in_sentiment.rating
+    ###NOT THE BEST RESCUE::
+    if comment.class == String
+      comment = comment.split(' ')
+    end
+    ####
+    comment.each do |w|
+      mtch = w.match(/\s/)
+      if !mtch.nil?
+        w = w.split(' ')
+        w.each do |ww|
+          found_in_sentiment = Word.find_by_content(ww)
+          if !found_in_sentiment.nil?
+            found_value = true
+            rating = rating + found_in_sentiment.rating
+          end
+        end
+      else
+        found_in_sentiment = Word.find_by_content(w)
+        if !found_in_sentiment.nil?
+          found_value = true
+          rating  = rating + found_in_sentiment.rating
+        end
       end
     end
-    return rating
+    if found_value == true
+      result = rating
+    else
+      result = 0.0001
+    end
+    return result
+  end
+
+  #####FILTERING SENTIMENTS:
+
+  def self.filter_by_sentiment(search_hash, query)
+    processed_search = stringed_hash
+    hash_to_process = Plot.swap_words_for_multiples(search_hash, query)
+    hash_to_process.each do |k,v|
+      correct_video = Plot.find_correct_video(v, k)
+      processed_search[k] << correct_video
+    end
+    result = Plot.swap_multiples_for_single(processed_search, search_hash)
+    return result
+  end
+
+
+  def self.find_correct_video(ytids_string, target_word)
+    yt_phrases_hash = Hash.new{|h,k| h[k] = [] }
+    array_of_ratings = Array.new
+    ytids_string.split(' ').each do |yt|
+      y = Video.find_by_content(yt)
+      closest_phrase = Plot.find_closest_phrase(y.phrases, target_word)
+      yt_phrases_hash[yt] = closest_phrase
+    end
+    closest_yt = Plot.find_closest_yt(yt_phrases_hash, target_word)
+    result = closest_yt
+    return result
+  end
+
+
+  def self.find_closest_yt(yt_phrases_hash, target_word)
+    result = String.new
+    phr_ary = Array.new
+    yt_phrases_hash.each do |k,v|
+      phr_ary << v
+    end
+    chosen_phrase = Plot.find_closest_phrase(phr_ary, target_word)
+    yt_phrases_hash.each do |k, v|
+      if v == chosen_phrase
+        result = k
+      end
+    end
+    return result
+  end
+
+  #######FIND CLOSEST PHRASE:
+
+  def self.find_closest_phrase(array_of_phrases, target_word)
+    result = 0
+    closer_num = 0
+    target_number = Plot.find_sentiment_value(target_word)
+    if !array_of_phrases.nil?
+      hash_of_ratings = Hash.new{|h,k| h[k] = []}
+      array_of_ratings = Array.new
+      array_of_phrases.each do |ph|
+        if !ph.rating.blank?
+          hash_of_ratings[ph.rating] = ph
+          array_of_ratings << ph.rating
+        end
+      end
+      if !array_of_ratings.blank?
+        closer_num = Plot.find_closest_number(array_of_ratings, target_number)
+        result = hash_of_ratings[closer_num]
+      end
+    end
+    return result
+  end
+
+  #######FIND CLOSEST NUMBER, APP-AGNOSTIC
+
+  def self.find_closest_number(array_of_numbers, target_number)
+    closer_num = 0.0001
+    if !array_of_numbers.blank?
+      if array_of_numbers.length == 1
+        closer_num = array_of_numbers[0]
+      else
+        ary = array_of_numbers.partition do |elmt|
+          elmt < target_number
+        end
+        lowest = ary[0].max
+        highest = ary[1].min
+        if lowest.nil?
+          closer_num = highest
+        elsif highest.nil?
+          closer_num = lowest
+        elsif (highest - target_number > target_number - lowest)
+          closer_num = highest
+        else
+          closer_num = lowest
+        end
+      end
+    end
+    return closer_num
+  end
+
+  ##############QUERY PROCESSING:
+  # SWITCHES WORD FOR HASH WITH VALUES
+  ###############################
+  #
+  # def self.filter_query_by_sentiment(query, search_hash)
+  #   query_hash = stringed_hash
+  #   query_array = Plot.process_query(query)
+  #   search_hash.each do |k,v|
+  #     query_array.each do |q|
+  #       if q.include?(k)
+  #
+  #
+  #         query_hash[k] << q
+  #       end
+  #     end
+  #   end
+  #   result = Plot.new_sentiment_values(query_hash)
+  #   return result
+  # end
+  #
+  #
+  # def self.new_sentiment_values(query_hash)
+  #   result = Hash.new{|h,k| h[k] = 0 }
+  #   query_hash.each do |k, v|
+  #     new_sentiment = Plot.find_sentiment_value(v)
+  #     result[k] << new_sentiment
+  #   end
+  #   return result
+  # end
+  # ######
+
+  def self.swap_words_for_multiples(search_hash, query)
+    query_hash = stringed_hash
+    query_array = Plot.process_query(query)
+    search_hash.each do |k,v|
+      query_array.each do |q|
+        if q.include?(k)
+          query_hash[q] << v
+        end
+      end
+    end
+    result = query_hash
+    return result
+  end
+
+  def self.swap_multiples_for_single(processed_search, search_hash)
+    result = stringed_hash
+    search_hash.each do |k, v|
+      processed_search.each do |c, w|
+        if c.include?(k)
+          result[k] << w
+        end
+      end
+    end
+
+    return result
+
   end
 
 

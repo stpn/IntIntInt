@@ -44,8 +44,9 @@ class PlotsController < ApplicationController
   def create
     @plot = Plot.new(params[:plot])
     youtubeids = Array.new
-    words = Array.new    
-      Plot.search(@plot.name).each do |k,v|
+    words = Array.new 
+    hash_of_search = Plot.search(@plot.name)    
+      hash_of_search.each do |k,v|
         v.split(' ').each do |f|
           youtubeids << f
         end

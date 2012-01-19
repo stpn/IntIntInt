@@ -11,10 +11,10 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120116234752) do
+ActiveRecord::Schema.define(:version => 20120118000502) do
 
   create_table "comments", :force => true do |t|
-    t.text     "content"
+    t.text     "content",    :limit => 255
     t.integer  "video_id"
     t.string   "youtubeid"
     t.datetime "created_at"
@@ -43,6 +43,8 @@ ActiveRecord::Schema.define(:version => 20120116234752) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "discards", ["youtubeid"], :name => "index_discards_on_youtubeid"
 
   create_table "keywords", :force => true do |t|
     t.string   "content"
@@ -77,25 +79,25 @@ ActiveRecord::Schema.define(:version => 20120116234752) do
   end
 
   create_table "phrases", :force => true do |t|
-    t.text     "content"
+    t.text     "content",    :limit => 255
     t.integer  "video_id"
     t.string   "youtubeid"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "timecode",   :default => "--- []\n"
-    t.boolean  "rating"
+    t.text     "timecode",   :limit => 255, :default => "'"
+    t.float    "rating"
   end
 
   add_index "phrases", ["video_id"], :name => "index_phrases_on_video_id"
 
   create_table "plots", :force => true do |t|
-    t.text     "name"
+    t.text     "name",            :limit => 255
     t.text     "content"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "title"
     t.text     "youtubeid"
-    t.text     "chosen_word",     :default => "--- []\n"
+    t.text     "chosen_word",     :limit => 255, :default => "'--- []\n'"
     t.float    "sentiment_value"
   end
 
@@ -120,10 +122,10 @@ ActiveRecord::Schema.define(:version => 20120116234752) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "comments"
-    t.text     "keywords"
+    t.text     "keywords",   :limit => 255
     t.string   "views"
-    t.string   "rating"
     t.boolean  "download"
+    t.string   "rating"
   end
 
   add_index "videos", ["comments"], :name => "index_videos_on_comments"

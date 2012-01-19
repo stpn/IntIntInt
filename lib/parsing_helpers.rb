@@ -15,7 +15,7 @@ module ParsingHelpers
     end
 
    def remove_stop_words(array)
-     array = array.reject { |w| stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, '')) }
+     array = array.reject { |w| stop_words.include?(w.gsub(/[\.,;:\-{}\[\]()]/, ' ')) }
      return array
    end
 end 
