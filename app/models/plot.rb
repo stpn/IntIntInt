@@ -11,56 +11,64 @@ class Plot < ActiveRecord::Base
 
   @boom = Object.new
 
-  def self.search(search)
-    @neg = Array.new
-    @sorted_words = Array.new
-    @result = stringed_hash
-    @positive = stringed_hash
+  def self.search(query)
+    neg = Array.new
+    sorted_words = Array.new
+    result = stringed_hash
+    positive = stringed_hash
 
-    @multiple_words = Plot.process_query(search)
+    search = Plot.clean_search(query)
+
+    multiple_words = Plot.select_multiples(search)
+    multiple_words = Plot.merge_multiples_and_singles(multiple_words, search)
 
     # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
-    @multiple_words.each do |w|
+    multiple_words.each do |w|
       mtch = w.match(/\s/)
       if mtch.nil?
         if !stop_words.include?(w)
           cont = Metaword.find_by_content(w)
           if !cont.nil?
-            mtch = @positive[w].match(/#{cont.youtubeid}/)
+            mtch = positive[w].match(/#{cont.youtubeid}/)
             if mtch.nil?
               cont.videos.each do |cv|
-                @positive[w] << "#{cv.content} "
+                positive[w] << "#{cv.content} "
               end
             end
           else
-            @neg << w
+            neg << w
           end
         end
       end
     end
 
-    @neg = @neg.join(' ').split(' ').uniq
-    @neg = remove_stop_words(@neg)
+    neg = neg.join(' ').split(' ').uniq
+    neg = remove_stop_words(neg)
 
-    @neg_to_pos = Plot.build_pos_hash(@parts_of_speech, @neg)
+    tagged = Plot.tag_query(search)
 
-    Plot.start_hypernymation(@neg_to_pos, 0)
+    parts_of_speech ||= Plot.convert_to_pos(tagged)
 
-    @positive = @positive.merge(Plot.hypernyms_to_metawords)
 
-    @positive.each do |k,v|
-      @sorted_words << k
+    neg_to_pos = Plot.build_pos_hash(parts_of_speech, neg)
+
+    Plot.start_hypernymation(neg_to_pos, 0)
+
+    positive = positive.merge(Plot.hypernyms_to_metawords)
+
+    positive.each do |k,v|
+      sorted_words << k
     end
 
     # Sort the words according to init string
-    @sorted_words = @sorted_words.sort_by { |substr| Plot.clean_search(search).index(substr) }
-    @sorted_words.each do |s|
-      @positive[s].split(' ').each do |b|
-        @result[s] << "#{b} "
+    sorted_words = sorted_words.sort_by { |substr| Plot.clean_search(search).index(substr) }
+    sorted_words.each do |s|
+      positive[s].split(' ').each do |b|
+        result[s] << "#{b} "
       end
     end
-    @boom = @positive
-    #   return @result
+    @boom = positive
+    #   return result
     return @boom
   end
 
@@ -84,51 +92,61 @@ class Plot < ActiveRecord::Base
   ###########################################################
 
 
-  def self.process_query(query)
-    @search = Plot.clean_search(query)
-    @multiple_words = Array.new
-    @single_words = Array.new
 
-    tgr = EngTagger.new
-    @tagged = tgr.add_tags(@search)
-    @tagged_phrases = tgr.get_noun_phrases(@tagged)
-
-    @single_words = @search.gsub(/[\?\!\.]/,'')
-    @single_words = @single_words.gsub(/('\w)/,'').split(' ').uniq
-    @parts_of_speech ||= Plot.convert_to_pos(@tagged)
-
+  def self.select_multiples(search)
+    multiple_words = Array.new
+    tagged_phrases = Plot.tag_phrases(search)
     # This is creation of the array with unique words
-    @tagged_phrases.each do |k,v|
+    tagged_phrases.each do |k,v|
       mtch = k.match(/\s/)
       if !mtch.nil?
-        @multiple_words << k.gsub(/[\?\!\.]/,'')
+        multiple_words << k.gsub(/[\?\!\.]/,'')
       end
     end
+    multiple_words = Plot.remove_multiple_word_duplicates(multiple_words)
+    result = multiple_words
+    return result
+  end
 
-    @multiple_words = Plot.remove_multiple_word_duplicates(@multiple_words)
 
+  def self.tag_phrases(search)
+    tgr = EngTagger.new
+    tagged = tgr.add_tags(search)
+    tagged_phrases = tgr.get_noun_phrases(tagged)
+    result = tagged_phrases
+    return result
+  end
+
+  def self.tag_query(search)
+    tgr = EngTagger.new
+    tagged = tgr.add_tags(search)
+    result = tagged
+    return result
+  end
+
+  def self.merge_multiples_and_singles(multiple_words, search)
+    single_words = Array.new
+    single_words = search.gsub(/[\?\!\.]/,'')
+    single_words = single_words.gsub(/('\w)/,'').split(' ').uniq
     #better to create another object?
-    @single_words.each do |word|
-      b = @multiple_words.join(' ').include? word
+    single_words.each do |word|
+      b = multiple_words.join(' ').include? word
       if b==false
-        @multiple_words << word
+        multiple_words << word
       end
     end
-
     #Now create a string without the matched words
-    @q2 = @search
-    remove_stop_words(@multiple_words).each do |a|
-      @q2 = @q2.gsub(/#{a}'\w/,'')
-      @q2 = @q2.gsub(/#{a}/,'')
+    q2 = search
+    remove_stop_words(multiple_words).each do |a|
+      q2 = q2.gsub(/#{a}'\w/,'')
+      q2 = q2.gsub(/#{a}/,'')
     end
-
     # remove the stop_words and return a clean array
-    @q2.split(' ').each do |q|
-      @multiple_words << q
+    q2.split(' ').each do |q|
+      multiple_words << q
     end
-
-    return @multiple_words.uniq
-
+    result = multiple_words.uniq
+    return result
   end
 
 
@@ -303,8 +321,6 @@ class Plot < ActiveRecord::Base
   end
 
 
-
-
   def self.find_hypernyms(pos, word)
     p word
     p pos
@@ -390,7 +406,6 @@ class Plot < ActiveRecord::Base
     if comment.class == String
       comment = comment.split(' ')
     end
-    ####
     comment.each do |w|
       mtch = w.match(/\s/)
       if !mtch.nil?
@@ -419,7 +434,7 @@ class Plot < ActiveRecord::Base
   end
 
   #####FILTERING SENTIMENTS:
-
+  #########################
   def self.filter_by_sentiment(search_hash, query)
     processed_search = stringed_hash
     hash_to_process = Plot.swap_words_for_multiples(search_hash, query)
@@ -428,6 +443,40 @@ class Plot < ActiveRecord::Base
       processed_search[k] << correct_video
     end
     result = Plot.swap_multiples_for_single(processed_search, search_hash)
+    return result
+  end
+
+
+  def self.swap_words_for_multiples(search_hash, query)
+    search = Plot.clean_search(query)
+    added_multiples = stringed_hash
+    multiple_words = Plot.select_multiples(search)
+    search_hash.each do |k,v|
+      multiple_words.each do |q|
+        mtch = q.match(/(\A|\b)#{k}(\b|\z)/)
+        if !mtch.nil?
+          added_multiples[q] << v
+          search_hash.delete_if{|a,b| b == v }
+        end
+      end
+    end
+    search_hash = search_hash.merge(added_multiples)
+    result = search_hash
+    return result
+  end
+
+
+  def self.swap_multiples_for_single(processed_search, search_hash)
+    result = stringed_hash
+    search_hash.each do |k, v|
+      p k +" this is search_hash"
+      processed_search.each do |c, w|
+        p k+" this is processed_hash"
+        if c.include?(k)
+          result[k] << "#{w} "
+        end
+      end
+    end
     return result
   end
 
@@ -462,7 +511,7 @@ class Plot < ActiveRecord::Base
   end
 
   #######FIND CLOSEST PHRASE:
-
+  #### THIS SOMEHOW RETURNS 0 IF array_of_phrases CONTAINS ONLY ONE PHRASE
   def self.find_closest_phrase(array_of_phrases, target_word)
     result = 0
     closer_num = 0
@@ -471,104 +520,20 @@ class Plot < ActiveRecord::Base
       hash_of_ratings = Hash.new{|h,k| h[k] = []}
       array_of_ratings = Array.new
       array_of_phrases.each do |ph|
-        if !ph.rating.blank?
+        p ph.rating
+        if !ph.rating.nil?
           hash_of_ratings[ph.rating] = ph
           array_of_ratings << ph.rating
         end
       end
       if !array_of_ratings.blank?
-        closer_num = Plot.find_closest_number(array_of_ratings, target_number)
+        closer_num = find_closest_number(array_of_ratings, target_number)
         result = hash_of_ratings[closer_num]
-      end
-    end
-    return result
-  end
-
-  #######FIND CLOSEST NUMBER, APP-AGNOSTIC
-
-  def self.find_closest_number(array_of_numbers, target_number)
-    closer_num = 0.0001
-    if !array_of_numbers.blank?
-      if array_of_numbers.length == 1
-        closer_num = array_of_numbers[0]
       else
-        ary = array_of_numbers.partition do |elmt|
-          elmt < target_number
-        end
-        lowest = ary[0].max
-        highest = ary[1].min
-        if lowest.nil?
-          closer_num = highest
-        elsif highest.nil?
-          closer_num = lowest
-        elsif (highest - target_number > target_number - lowest)
-          closer_num = highest
-        else
-          closer_num = lowest
-        end
+        result = array_of_phrases[rand(array_of_phrases.length)]
       end
     end
-    return closer_num
-  end
-
-  ##############QUERY PROCESSING:
-  # SWITCHES WORD FOR HASH WITH VALUES
-  ###############################
-  #
-  # def self.filter_query_by_sentiment(query, search_hash)
-  #   query_hash = stringed_hash
-  #   query_array = Plot.process_query(query)
-  #   search_hash.each do |k,v|
-  #     query_array.each do |q|
-  #       if q.include?(k)
-  #
-  #
-  #         query_hash[k] << q
-  #       end
-  #     end
-  #   end
-  #   result = Plot.new_sentiment_values(query_hash)
-  #   return result
-  # end
-  #
-  #
-  # def self.new_sentiment_values(query_hash)
-  #   result = Hash.new{|h,k| h[k] = 0 }
-  #   query_hash.each do |k, v|
-  #     new_sentiment = Plot.find_sentiment_value(v)
-  #     result[k] << new_sentiment
-  #   end
-  #   return result
-  # end
-  # ######
-
-  def self.swap_words_for_multiples(search_hash, query)
-    query_hash = stringed_hash
-    query_array = Plot.process_query(query)
-    search_hash.each do |k,v|
-      query_array.each do |q|
-        if q.include?(k)
-          query_hash[q] << v
-        end
-      end
-    end
-    result = query_hash
     return result
   end
-
-  def self.swap_multiples_for_single(processed_search, search_hash)
-    result = stringed_hash
-    search_hash.each do |k, v|
-      processed_search.each do |c, w|
-        if c.include?(k)
-          result[k] << w
-        end
-      end
-    end
-
-    return result
-
-  end
-
 
 end

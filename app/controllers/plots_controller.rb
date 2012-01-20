@@ -16,7 +16,7 @@ class PlotsController < ApplicationController
     @plot = Plot.find(params[:id])
     string = @plot.name
     @words = @plot.chosen_word
-#    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
+    #    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @plot }
@@ -43,23 +43,25 @@ class PlotsController < ApplicationController
   # POST /plots.json
   def create
     @plot = Plot.new(params[:plot])
+    query = @plot.name
     youtubeids = Array.new
-    words = Array.new 
-    hash_of_search = Plot.search(@plot.name)    
-      hash_of_search.each do |k,v|
-        v.split(' ').each do |f|
-          youtubeids << f
-        end
-          words << k
-        end
-        youtubeids = Plot.pull_youtubeids_with_timecodes(youtubeids)        
-        @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
-        @plot.content = (Plot.create_iframes(youtubeids))
-        @plot.chosen_word = words
-        @plot.sentiment_value = Plot.find_sentiment_value(words)
-        @plot.save!
+    words = Array.new
+    hash_of_search = Plot.search(query)
+    new_hash = Plot.filter_by_sentiment(hash_of_search, query)
+    new_hash.each do |k,v|
+      v.split(' ').each do |f|
+        youtubeids << f
+      end
+      words << k
+    end
+    youtubeids = Plot.pull_youtubeids_with_timecodes(youtubeids)
+    @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
+    @plot.content = (Plot.create_iframes(youtubeids))
+    @plot.chosen_word = words
+    @plot.sentiment_value = Plot.find_sentiment_value(words)
+    @plot.save!
     respond_to do |format|
-  
+
       if @plot.save
         format.html { redirect_to @plot, notice: 'Plot was successfully created.' }
         format.json { render json: @plot, status: :created, location: @plot }
@@ -97,6 +99,6 @@ class PlotsController < ApplicationController
       format.json { head :ok }
     end
   end
-  
-  
+
+
 end
