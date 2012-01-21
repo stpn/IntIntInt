@@ -74,7 +74,10 @@ class Phrase < ActiveRecord::Base
       if p.rating.blank?
         mtch = p.content.match(/[a-zA-Z]/)
         if !mtch.nil?
-          noun_phrases = Plot.process_query(p.content)
+          search = Plot.clean_search(p.content)
+          noun_phrases = Plot.select_multiples(search)
+          noun_phrases = Plot.merge_multiples_and_singles(noun_phrases, search)          
+#          noun_phrases = Plot.process_query(p.content)
           p.rating = Plot.find_sentiment_value(noun_phrases)
           p.save!
         end

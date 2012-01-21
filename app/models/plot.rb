@@ -469,9 +469,7 @@ class Plot < ActiveRecord::Base
   def self.swap_multiples_for_single(processed_search, search_hash)
     result = stringed_hash
     search_hash.each do |k, v|
-      p k +" this is search_hash"
       processed_search.each do |c, w|
-        p k+" this is processed_hash"
         if c.include?(k)
           result[k] << "#{w} "
         end
