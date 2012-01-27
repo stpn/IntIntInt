@@ -25,8 +25,8 @@ class Video < ActiveRecord::Base
     query ||= Video.yt_session.videos_by(:view_count => number, :max_results => 15, :page => page, :index => indexing, :per_page => 15)
 
 #THE FOLLOWING FUNCTION WAS PART OF load_video    
-    @video_array = Self.pull_videos_from_youtube(query, @video_array)
-    @video_array = Self.check_db_for_yt(@video_array)     
+    @video_array = Video.pull_videos_from_youtube(query, @video_array)
+    @video_array = Video.check_db_for_yt(@video_array)     
 
 
     if !@video_array.empty?
