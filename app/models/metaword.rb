@@ -48,4 +48,9 @@ class Metaword < ActiveRecord::Base
   (Metaword.all - Metaword.all.uniq_by{|r| [r.content, r.youtubeid]}).each{ |d| d.destroy }
 end
 
+
+def self.make_metaword(youtubeid, content)
+  #LOOK FOR METAWORD IF NOT FOUND CREATE NEW ONE, IF FOUND ADD YOUTUBEIDS TO mw.videos
+end
+
 end

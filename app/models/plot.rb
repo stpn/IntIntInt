@@ -12,10 +12,13 @@ class Plot < ActiveRecord::Base
   @boom = Object.new
 
   def self.search(query)
+
     neg = Array.new
     sorted_words = Array.new
     result = stringed_hash
     positive = stringed_hash
+
+    video_array = []
 
     search = Plot.clean_search(query)
 
@@ -44,16 +47,10 @@ class Plot < ActiveRecord::Base
 
     neg = neg.join(' ').split(' ').uniq
     neg = remove_stop_words(neg)
-
     tagged = Plot.tag_query(search)
-
     parts_of_speech ||= Plot.convert_to_pos(tagged)
-
-
     neg_to_pos = Plot.build_pos_hash(parts_of_speech, neg)
-
     Plot.start_hypernymation(neg_to_pos, 0)
-
     positive = positive.merge(Plot.hypernyms_to_metawords)
 
     positive.each do |k,v|
@@ -67,17 +64,81 @@ class Plot < ActiveRecord::Base
         result[s] << "#{b} "
       end
     end
-    @boom = positive
-    #   return result
-    return @boom
+    #    result = positive
+    return result
+    #    return @boom
   end
+
+  #####THIS IS FOR JUST ONE KEYWORD
+
+
+  def self.search_youtube(query)
+    @sorted_words = Array.new
+    result = stringed_hash
+    video_hash = Hash.new{|h,k| h[k] = nil }
+    @search = Plot.clean_search(query)
+    phrases = []
+    multiple_words = @search.split(' ')
+
+    # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
+    multiple_words.each do |w|
+      #     mtch = w.match(/\s/)
+      #      if mtch.nil?
+      if !stop_words.include?(w)
+        @videos = Plot.collect_videos(w)
+        if !@videos.blank?
+          video_hash[w] = @videos
+
+        end
+      end
+    end
+    video_hash.each do |k,v|
+      if !v.blank?
+        phrases = Phrase.build_phrases(v)
+        if !phrases.blank?
+          closest_phrase = Plot.find_closest_phrase(phrases, k)
+          result[k] << closest_phrase.video.content
+          result[closest_phrase.video.content] << "phraseis #{closest_phrase.id}"
+        end
+      end
+    end
+    #   end
+    p "#{result}  <<<<<<<<< RESULT"
+    return result
+  end
+
+
+
+
+  def self.collect_videos(w)
+    videos = []
+    query ||= Video.yt_session.videos_by(:categories => [w.parameterize.to_sym])
+    video_array = Video.pull_videos_from_youtube(query, video_array)
+    if !video_array.empty?
+      video_array.each do |hash|
+        hash.each do |k,v|
+          comments = Video.load_comments(k)
+          if comments != "--- []\n"
+            vid = Video.create
+            vid.content  = k
+            vid.keywords = v
+            vid.comments = comments
+            vid.save!
+            #            (:content => k, :keywords => v, :comments => comments )
+            videos << vid
+          end
+        end
+      end
+    end
+    return videos
+  end
+
 
 
   ##########Clean search##################################
   ###########################################################
 
   def self.clean_search(query)
-
     @search = query.gsub(/[\.,;:\-{}\[\]()\d]/, ' ').downcase
     #think if you need this extreme:
     @search = @search.gsub(/[^a-zA-Z]/, ' ').downcase
@@ -108,11 +169,29 @@ class Plot < ActiveRecord::Base
     return result
   end
 
+  def self.select_single(search)
+    multiple_words = Array.new
+    tagged_words = Plot.tag_words(search)
+    # This is creation of the array with unique words
+
+    # tagged_words = Plot.remove_multiple_word_duplicates(tagged_words)
+    result = tagged_words
+    return result
+  end
+
 
   def self.tag_phrases(search)
     tgr = EngTagger.new
     tagged = tgr.add_tags(search)
     tagged_phrases = tgr.get_noun_phrases(tagged)
+    result = tagged_phrases
+    return result
+  end
+
+  def self.tag_words(search)
+    tgr = EngTagger.new
+    tagged = tgr.add_tags(search)
+    tagged_phrases = tgr.get_nouns(tagged)
     result = tagged_phrases
     return result
   end
@@ -378,6 +457,36 @@ class Plot < ActiveRecord::Base
     return result
   end
 
+
+  def self.pull_youtubeids_with_timecodes_with_hash(ytids, search_hash)
+    result = Array.new
+    search_hash.each do |k, v|
+      ytids.each do |y|
+        if y == k
+          phrase = v[/phraseis\s(.*)/]
+          timecode = Phrase.find_by_id($1).timecode
+          mtch2 = timecode.match(/(\d+:\d\d)/)
+          if !mtch2.nil?
+            # mtch = timecode.match(/(\d+:\d\d-\d+:\d\d)/)
+            #        if !mtch.nil?
+            #          timecode = timecode.scan(/(\d+:\d\d)-\d+:\d\d/).join(' ')
+            #          timecode = timecode[/(\d+):(\d\d)/]
+            #          timecode = '#t='+$1+'m'+$2+'s'
+            #        else
+            timecode = timecode[/(\d+):(\d\d)/]
+            timecode = '#t='+$1+'m'+$2+'s'
+            result << "#{y}#{timecode}"
+          else
+            timecode = '#t=0m00s'
+            result << "#{y}#{timecode}"
+          end
+        end
+      end
+    end
+    return result
+  end
+
+
   def self.create_iframes(ytids)
     result = Array.new
     ytids.each do |y|
@@ -483,9 +592,11 @@ class Plot < ActiveRecord::Base
     yt_phrases_hash = Hash.new{|h,k| h[k] = [] }
     array_of_ratings = Array.new
     ytids_string.split(' ').each do |yt|
+
       y = Video.find_by_content(yt)
       closest_phrase = Plot.find_closest_phrase(y.phrases, target_word)
       yt_phrases_hash[yt] = closest_phrase
+
     end
     closest_yt = Plot.find_closest_yt(yt_phrases_hash, target_word)
     result = closest_yt
@@ -518,7 +629,6 @@ class Plot < ActiveRecord::Base
       hash_of_ratings = Hash.new{|h,k| h[k] = []}
       array_of_ratings = Array.new
       array_of_phrases.each do |ph|
-        p ph.rating
         if !ph.rating.nil?
           hash_of_ratings[ph.rating] = ph
           array_of_ratings << ph.rating
