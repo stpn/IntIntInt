@@ -59,12 +59,12 @@ class PlotsController < ApplicationController
       end
     end
     youtubeids = Plot.pull_youtubeids_with_timecodes_with_hash(youtubeids, hash_of_search)
-    #@plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
-    @plot.youtubeid = youtubeids
+    @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
+    #@plot.youtubeid = youtubeids
       @plot.content = []
       @plot.chosen_word = []
     
-    #@plot.content = (Plot.create_iframes(youtubeids))
+    @plot.content = (Plot.create_iframes(youtubeids))
     #@plot.chosen_word = words
     #@plot.sentiment_value = Plot.find_sentiment_value(words)
     @plot.save
