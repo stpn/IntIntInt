@@ -1,6 +1,7 @@
 class ChangeRatingToFloat < ActiveRecord::Migration
   def up
-    change_column :phrases, :rating, :float    
+    remove_column :phrases, :rating
+    add_column :phrases, :rating, :float
   end
 
   def down
