@@ -4,9 +4,13 @@ PATH
     rwordnet (0.1.3)
 
 PATH
-  remote: vendor/gems/viddl-rb-0.5.5
+  remote: vendor/gems/youtube_it-2.0.1
   specs:
-    viddl-rb (0.5.5)
+    youtube_it (2.0.1)
+      builder
+      faraday (>= 0.7.3)
+      oauth (>= 0.4.4)
+      simple_oauth (>= 0.1.5)
 
 GEM
   remote: http://rubygems.org/
@@ -147,15 +151,12 @@ GEM
     uglifier (1.1.0)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
+    viddl-rb (0.5.5)
+      nokogiri
     whenever (0.7.0)
       activesupport (>= 2.3.4)
       chronic (~> 0.6.3)
     yaml_db (0.2.2)
-    youtube_it (2.0.1)
-      builder
-      faraday (>= 0.7.3)
-      oauth (>= 0.4.4)
-      simple_oauth (>= 0.1.5)
 
 PLATFORMS
   ruby
@@ -176,7 +177,7 @@ DEPENDENCIES
   thin
   turn
   uglifier (>= 1.0.3)
-  viddl-rb (= 0.5.5)!
+  viddl-rb
   whenever
   yaml_db
-  youtube_it
+  youtube_it (= 2.0.1)!
