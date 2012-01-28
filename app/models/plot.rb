@@ -112,7 +112,7 @@ class Plot < ActiveRecord::Base
 
   def self.collect_videos(w)
     videos = []
-    query ||= Video.yt_session.videos_by(:categories => [w.parameterize.to_sym])
+    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym])
     video_array = Video.pull_videos_from_youtube(query, video_array)
     if !video_array.empty?
       video_array.each do |hash|
