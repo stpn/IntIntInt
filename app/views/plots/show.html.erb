@@ -11,7 +11,13 @@
   <b>Plot:</b>
   <i><%= @plot.name %></i>
 </p>
- 
+
+<p>
+  <b>Links:</b>
+  <%= @plot.youtubeid %>
+ </p>
+
+<!---
 <p>
   <b>Links:</b>
   <%= @plot.youtubeid.each do |y| %>
@@ -42,7 +48,7 @@
 	<% end %>
 </p>
 
-
+-->
 
 
 <%= link_to 'Edit', edit_plot_path(@plot) %> |
