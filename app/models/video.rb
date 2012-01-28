@@ -76,7 +76,7 @@ class Video < ActiveRecord::Base
                      video_hash  = {real_video_id => keywords_string}
                      video_array.push video_hash
                    end
-                   real_video_ideturn video_array
+                   return video_array
                  end
                                   
                  
