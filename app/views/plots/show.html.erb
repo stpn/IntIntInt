@@ -14,11 +14,14 @@
  
 <p>
   <b>Links:</b>
-  <% @plot.youtubeid.each do |y| %>
+  <%= @plot.youtubeid %>
+
+</p>
+<!--- .each do |y| %>
 	<font color="red">	<%=y %> </font>|| 
 	<% end %>
 </p>
-<!---
+
 <p>
 	  <b>Plot words:</b><br />
 	  <% @words.each do |w| %>
