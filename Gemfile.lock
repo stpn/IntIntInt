@@ -3,6 +3,11 @@ PATH
   specs:
     rwordnet (0.1.3)
 
+PATH
+  remote: vendor/gems/viddl-rb-0.5.5
+  specs:
+    viddl-rb (0.5.5)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -142,8 +147,6 @@ GEM
     uglifier (1.1.0)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
-    viddl-rb (0.5.5)
-      nokogiri
     whenever (0.7.0)
       activesupport (>= 2.3.4)
       chronic (~> 0.6.3)
@@ -173,7 +176,7 @@ DEPENDENCIES
   thin
   turn
   uglifier (>= 1.0.3)
-  viddl-rb
+  viddl-rb (= 0.5.5)!
   whenever
   yaml_db
   youtube_it

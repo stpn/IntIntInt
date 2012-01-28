@@ -1,0 +1,12 @@
+=== 0.4.x
+* New Features
+  * Use wget or curl (if present)
+
+* Bugfixes
+  * Fixed Vimeo Plugin
+
+=== 0.3
+* New Features
+
+  * added megavideo plugin
+

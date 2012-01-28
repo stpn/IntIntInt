@@ -4,7 +4,7 @@ gem 'rails', '3.1.1'
 
 gem 'youtube_it'
 gem 'whenever'
-gem 'viddl-rb'
+gem 'viddl-rb', '0.5.5', :path => 'vendor/gems/viddl-rb-0.5.5'
 gem 'kaminari'
 gem 'authlogic'
 gem 'yaml_db'
