@@ -76,7 +76,7 @@ class Video < ActiveRecord::Base
                      video_hash  = {real_video_id => keywords_string}
                      video_array.push video_hash
                    end
-                   return video_array
+                   real_video_ideturn video_array
                  end
                                   
                  
@@ -100,15 +100,15 @@ class Video < ActiveRecord::Base
                  def self.load_comments(youtube_id)
                    @comments_content = String.new
                    @comments_array = Array.new
-                   comments_query ||= Video.yt_session.comments(youtube_id)
-                 rescue
-                   sleep(120)
-                   if (@page < 19)
-                     Video.load_video(@number, @page+1, @indexing+15)
-                   else
-                     Video.load_video(@number+5000, 1, 0)
-                   end
-                 else
+                   comments_query = Video.yt_session.comments(youtube_id)
+                 # rescue
+                 #          sleep(120)
+                 #          if (@page < 19)
+                 #            Video.load_video(@number, @page+1, @indexing+15)
+                 #          else
+                 #            Video.load_video(@number+5000, 1, 0)
+                 #          end
+                 #        else
                    comments_query.each do |comment|
                      @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
                      matches = @comments_content.match(/\d+:\d+/)
@@ -145,34 +145,6 @@ class Video < ActiveRecord::Base
                  end
 #################
 
-
-                 
-                 
-
-
-
-                 def self.load_comments(youtube_id)
-                   @comments_content = String.new
-                   @comments_array = Array.new
-                   comments_query ||= Video.yt_session.comments(youtube_id)
-                 rescue
-                   sleep(120)
-                   if (@page < 19)
-                     Video.load_video(@number, @page+1, @indexing+15)
-                   else
-                     Video.load_video(@number+5000, 1, 0)
-                   end
-                 else
-                   comments_query.each do |comment|
-                     @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
-                     matches = @comments_content.match(/\d+:\d+/)
-                     if !matches.nil?
-                       @comments_array.push @comments_content
-                     end
-                   end
-                   return @comments_array
-
-                 end
 
 
                  def loop_through_videos
