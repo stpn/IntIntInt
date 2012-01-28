@@ -14,10 +14,7 @@
  
 <p>
   <b>Links:</b>
-  <%= @plot.youtubeid %>
-
-</p>
-<!--- .each do |y| %>
+  <%= @plot.youtubeid.each do |y| %>
 	<font color="red">	<%=y %> </font>|| 
 	<% end %>
 </p>
@@ -45,7 +42,7 @@
 	<% end %>
 </p>
 
- -->
+
 
 
 <%= link_to 'Edit', edit_plot_path(@plot) %> |
