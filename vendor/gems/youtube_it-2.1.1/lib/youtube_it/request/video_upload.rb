@@ -1,5 +1,20 @@
 class YouTubeIt
   module Upload
+
+    class UploadError < YouTubeIt::Error; end
+
+    class AuthenticationError < YouTubeIt::Error; end
+
+    # Implements video uploads/updates/deletions
+    #
+    #   require 'youtube_it'
+    #
+    #   uploader = YouTubeIt::Upload::VideoUpload.new("user", "pass", "dev-key")
+    #   uploader.upload File.open("test.m4v"), :title => 'test',
+    #                                        :description => 'cool vid d00d',
+    #                                        :category => 'People',
+    #                                        :keywords => %w[cool blah test]
+    #
     class VideoUpload
       include YouTubeIt::Logging
 
@@ -60,7 +75,7 @@ class YouTubeIt
         @opts    = { :mime_type => 'video/mp4',
                      :title => '',
                      :description => '',
-                     :category => '',
+                     :category => 'People',
                      :keywords => [] }.merge(opts)
 
         @opts[:filename] ||= generate_uniq_filename_from(data)
@@ -88,7 +103,11 @@ class YouTubeIt
       #   :private
       # When the authentication credentials are incorrect, an AuthenticationError will be raised.
       def update(video_id, options)
-        @opts       = options
+        @opts = { :title => '',
+                  :description => '',
+                  :category => 'People',
+                  :keywords => [] }.merge(options)
+        
         update_body = video_xml
         update_url  = "/feeds/api/users/default/uploads/%s" % video_id
         response    = yt_session.put(update_url, update_body)
@@ -104,6 +123,24 @@ class YouTubeIt
         response = yt_session.get(contacts_url)
         
         return YouTubeIt::Parser::ContactsParser.new(response).parse
+      end
+      
+      def send_message(opts)
+        message_body = message_xml_for(opts)
+        message_url  = "/feeds/api/users/%s/inbox" % opts[:recipient_id]
+        response     = yt_session.post(message_url, message_body)
+        
+        return {:code => response.status, :body => response.body}
+      end
+      
+      # Fetches the currently authenticated user's messages (i.e. inbox).
+      # When the authentication credentials are incorrect, an AuthenticationError will be raised.
+      def get_my_messages(opts)
+        messages_url = "/feeds/api/users/default/inbox"
+        messages_url << opts.collect { |k,p| [k,p].join '=' }.join('&')
+        response = yt_session.get(messages_url)
+        
+        return YouTubeIt::Parser::MessagesParser.new(response).parse
       end
 
       # Fetches the data of a video, which may be private. The video must be owned by this user.
@@ -133,6 +170,14 @@ class YouTubeIt
 
         return true
       end
+      
+      # Delete a video message
+      def delete_message(message_id)
+        delete_url = "/feeds/api/users/default/inbox/%s" % message_id
+        response   = yt_session.delete(delete_url)
+
+        return true
+      end
 
       def get_upload_token(options, nexturl)
         @opts      = options
@@ -156,7 +201,6 @@ class YouTubeIt
         comment_url = "/feeds/api/videos/%s/comments?" % video_id
         comment_url << opts.collect { |k,p| [k,p].join '=' }.join('&')
         response    = yt_session.get(comment_url)
-        
         return YouTubeIt::Parser::CommentsFeedParser.new(response).parse
       end
 
@@ -289,6 +333,22 @@ class YouTubeIt
 
         return REXML::Document.new(response.body).elements["entry"].elements['author'].elements['name'].text
       end
+      
+      def add_response(original_video_id, response_video_id)
+        response_body   = video_xml_for(:response => response_video_id)
+        response_url    = "/feeds/api/videos/%s/responses" % original_video_id
+        response        = yt_session.post(response_url, response_body)
+         
+        return {:code => response.status, :body => response.body}
+      end
+
+      def delete_response(original_video_id, response_video_id)
+        response_url    = "/feeds/api/videos/%s/responses/%s" % [original_video_id, response_video_id]
+        response        = yt_session.delete(response_url)
+         
+        return {:code => response.status, :body => response.body}
+      end
+
 
       private
 
@@ -313,6 +373,36 @@ class YouTubeIt
           header.merge!("Authorization"  => "GoogleLogin auth=#{auth_token}")
         end
         header
+      end
+
+      def parse_upload_error_from(string)
+        begin
+          REXML::Document.new(string).elements["//errors"].inject('') do | all_faults, error|
+            if error.elements["internalReason"]
+              msg_error = error.elements["internalReason"].text
+            elsif error.elements["location"]
+              msg_error = error.elements["location"].text[/media:group\/media:(.*)\/text\(\)/,1]
+            else
+              msg_error = "Unspecified error"
+            end
+            code = error.elements["code"].text if error.elements["code"]
+            all_faults + sprintf("%s: %s\n", msg_error, code)
+          end
+        rescue
+          string[/<TITLE>(.+)<\/TITLE>/, 1] || string
+        end
+      end
+
+      def raise_on_faulty_response(response)
+        response_code = response.code.to_i
+        msg = parse_upload_error_from(response.body.gsub(/\n/, ''))
+
+        if response_code == 403 || response_code == 401
+        #if response_code / 10 == 40
+          raise AuthenticationError.new(msg, response_code)
+        elsif response_code / 10 != 20 # Response in 20x means success
+          raise UploadError.new(msg, response_code)
+        end
       end
 
       def uploaded_video_id_from(string)
@@ -342,7 +432,7 @@ class YouTubeIt
 
       def auth_token
         @auth_token ||= begin
-          http  = Faraday.new("https://www.google.com")
+          http  = Faraday.new("https://www.google.com", :ssl => {:verify => false})
           body = "Email=#{YouTubeIt.esc @user}&Passwd=#{YouTubeIt.esc @password}&service=youtube&source=#{YouTubeIt.esc @client_id}"
           response = http.post("/youtube/accounts/ClientLogin", body, "Content-Type" => "application/x-www-form-urlencoded")
           raise ::AuthenticationError.new(response.body[/Error=(.+)/,1], response.status.to_i) if response.status.to_i != 200
@@ -378,12 +468,22 @@ class YouTubeIt
         b.instruct!
         b.entry(:xmlns => "http://www.w3.org/2005/Atom", 'xmlns:yt' => "http://gdata.youtube.com/schemas/2007") do | m |
           m.content(data[:comment]) if data[:comment]
-          m.id(data[:favorite] || data[:playlist]) if data[:favorite] || data[:playlist]
+          m.id(data[:favorite] || data[:playlist] || data[:response]) if data[:favorite] || data[:playlist] || data[:response]
           m.tag!("yt:rating", :value => data[:rating]) if data[:rating]
           if(data[:subscribe])
             m.category(:scheme => "http://gdata.youtube.com/schemas/2007/subscriptiontypes.cat", :term => "channel")
             m.tag!("yt:username", data[:subscribe])
           end
+        end.to_s
+      end
+      
+      def message_xml_for(data)
+        b = Builder::XmlMarkup.new
+        b.instruct!
+        b.entry(:xmlns => "http://www.w3.org/2005/Atom", 'xmlns:yt' => "http://gdata.youtube.com/schemas/2007") do | m |
+          m.id(data[:vedio_id]) #if data[:vedio_id]
+          m.title(data[:title]) if data[:title]
+          m.summary(data[:message])
         end.to_s
       end
 
@@ -420,11 +520,12 @@ class YouTubeIt
       end
 
       def yt_session(url = nil)
-        Faraday.new(:url => url ? url : base_url) do |builder|
+        Faraday.new(:url => (url ? url : base_url), :ssl => {:verify => false}) do |builder|
           builder.use Faraday::Request::OAuth, @config_token if @config_token
           builder.use Faraday::Request::AuthHeader, authorization_headers
           builder.use Faraday::Response::YouTubeIt 
-          builder.adapter Faraday.default_adapter          
+          builder.adapter Faraday.default_adapter 
+          
         end
       end
     end

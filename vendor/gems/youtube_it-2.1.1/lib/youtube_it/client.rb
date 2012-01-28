@@ -83,8 +83,15 @@ class YouTubeIt
     #
     # === Returns
     # YouTubeIt::Model::Video
-    def video_by(vid)
-      video_id = vid =~ /^http/ ? vid : "http://gdata.youtube.com/feeds/api/videos/#{vid}?v=2#{@dev_key ? '&key='+@dev_key : ''}"
+    def video_by(video)
+      vid = nil
+      vid_regex = /(?:youtube.com|youtu.be).*(?:\/|v=)(\w+)/
+      if video =~ vid_regex
+        vid = $1
+      else
+        vid = video
+      end
+      video_id ="http://gdata.youtube.com/feeds/api/videos/#{vid}?v=2#{@dev_key ? '&key='+@dev_key : ''}"
       parser = YouTubeIt::Parser::VideoFeedParser.new(video_id)
       parser.parse
     end
@@ -105,6 +112,10 @@ class YouTubeIt
 
     def video_delete(video_id)
       client.delete(video_id)
+    end
+    
+    def message_delete(message_id)
+      client.delete_message(message_id)
     end
 
     def upload_token(options, nexturl = "http://www.youtube.com/my_videos")
@@ -194,6 +205,14 @@ class YouTubeIt
     def enable_http_debugging
       client.enable_http_debugging
     end
+    
+    def add_response(original_video_id, response_video_id)
+      client.add_response(original_video_id, response_video_id)
+    end
+
+    def delete_response(original_video_id, response_video_id)
+      client.delete_response(original_video_id, response_video_id)
+    end
 
     def current_user
       client.get_current_user
@@ -212,6 +231,16 @@ class YouTubeIt
     # Get's all of the user's contacts/friends. 
     def my_contacts(opts = {})
       client.get_my_contacts(opts)
+    end
+    
+    # Send vedio message
+    def send_message(opts = {})
+      client.send_message(opts)
+    end
+    
+    # Get's all of the user's messages/inbox. 
+    def my_messages(opts = {})
+      client.get_my_messages(opts)
     end
 
     private
@@ -355,14 +384,16 @@ class YouTubeIt
     end
 
     def current_user
-      yt_session = Faraday.new(:url => "http://gdata.youtube.com") do |builder|
-        builder.use Faraday::Response::YouTubeIt 
-        builder.use Faraday::Request::OAuth, config_token
-        builder.adapter Faraday.default_adapter          
+      profile = access_token.get("http://gdata.youtube.com/feeds/api/users/default")
+      response_code = profile.code.to_i
+
+      if response_code/10 == 20 # success
+        REXML::Document.new(profile.body).elements["entry"].elements['author'].elements['name'].text
+      elsif response_code == 403 || response_code == 401 # auth failure
+        raise YouTubeIt::Upload::AuthenticationError.new(profile.inspect, response_code)
+      else
+        raise YouTubeIt::Upload::UploadError.new(profile.inspect, response_code)
       end
-      
-      body = yt_session.get("/feeds/api/users/default").body
-      REXML::Document.new(body).elements["entry"].elements['author'].elements['name'].text
     end
 
     private

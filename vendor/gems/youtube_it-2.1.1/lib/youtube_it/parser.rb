@@ -2,7 +2,7 @@ class YouTubeIt
   module Parser #:nodoc:
     class FeedParser #:nodoc:
       def initialize(content)
-        @content = open(content).read
+        @content = (content =~ URI::regexp(%w(http https)) ? open(content).read : content)
         
       rescue OpenURI::HTTPError => e
         raise OpenURI::HTTPError.new(e.io.status[0],e)
@@ -41,8 +41,8 @@ class YouTubeIt
       protected
         def parse_entry(entry)
           author = YouTubeIt::Model::Author.new(
-            :name => entry.elements["author"].elements["name"].text,
-            :uri  => entry.elements["author"].elements["uri"].text
+            :name => (entry.elements["author"].elements["name"].text rescue nil),
+            :uri  => (entry.elements["author"].elements["uri"].text rescue nil)
           )
           YouTubeIt::Model::Comment.new(
             :author    => author,
@@ -245,6 +245,33 @@ class YouTubeIt
         end
         
         return contacts
+      end
+    end
+    
+    # Returns an array of the user's messages
+    class MessagesParser < FeedParser
+      def parse_content(content)
+        doc = REXML::Document.new(content.body)
+        puts content.body
+        puts "doc..."
+        puts doc.inspect
+        feed = doc.elements["feed"]
+        
+        messages = []
+        feed.elements.each("entry") do |entry|
+          author = entry.elements["author"]
+          temp_message = YouTubeIt::Model::Message.new(
+            :id  => entry.elements["id"] ? entry.elements["id"].text.gsub(/.+:inbox:/, "") : nil, 
+            :title    => entry.elements["title"] ? entry.elements["title"].text : nil,
+            :name => author && author.elements["name"] ? author.elements["name"].text : nil,
+            :summary   => entry.elements["summary"] ? entry.elements["summary"].text : nil,
+            :published   => entry.elements["published"] ? entry.elements["published"].text : nil
+          )
+          
+          messages << temp_message
+        end
+        
+        return messages
       end
     end
 

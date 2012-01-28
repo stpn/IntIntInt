@@ -2,7 +2,9 @@ source 'http://rubygems.org'
 
 gem 'rails', '3.1.1'
 
-gem 'youtube_it', '2.0.1', :path => 'vendor/gems/youtube_it-2.0.1'
+gem 'youtube_it', '2.1.1', :path => 'vendor/gems/youtube_it-2.1.1'
+#gem 'youtube_it'
+
 gem 'whenever'
 gem 'viddl-rb'
 gem 'kaminari'
