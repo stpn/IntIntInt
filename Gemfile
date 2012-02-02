@@ -7,6 +7,9 @@ gem 'youtube_it', '2.1.1', :path => 'vendor/gems/youtube_it-2.1.1'
 
 gem 'resque'
 
+gem 'rake', '0.8.7'
+
+
 gem 'whenever'
 gem 'viddl-rb'
 gem 'kaminari'
