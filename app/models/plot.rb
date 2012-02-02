@@ -2,9 +2,9 @@ class Plot < ActiveRecord::Base
   include ParsingHelpers
   include NewThings
 
-  serialize :chosen_word, Array
-  serialize :youtubeid, Array
-  serialize :content, Array
+#  serialize :chosen_word, Array
+#  serialize :youtubeid, Array
+#  serialize :content, Array
 
   @hypernym_storage = stringed_hash
   @hypernym_array = Array.new
