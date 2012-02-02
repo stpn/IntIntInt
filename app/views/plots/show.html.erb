@@ -1,3 +1,6 @@
+<% if flash[:notice] %>
+     <p class="notice"><%= flash[:notice] %></p>
+<% else %>
 <p id="notice"><%= notice %></p>
 
 
@@ -14,42 +17,37 @@
 
 <p>
   <b>Links:</b>
-  <%= @plot.youtubeid  %>
-<!-- 
-  <%= @plot.youtubeid.each do |y| %>
-	<font color="red">	<%=y %> </font>|| 
+
+ <% @plot.youtubeid.split(' ').each do |y| %>
+	<font color="red">	<%= y %> </font>|| 
 	<% end %>
 </p>
--->
+
 <p>
 	  <b>Plot words:</b><br />
-	
-		  <%= @words %>
-<!--
-	  <% @words.each do |w| %>
+
+
+	  <% @words.split(' ').each do |w| %>
 	<font color="blue"><%= w %></font>|
 	<% end %>
 	
 	</p>
 	
-	-->
-<p>
-  <b>Plot sentiment:</b><br />
-<font color="orange">  <%= @plot.sentiment_value %></font>
 
 
-<!--
+
 </p>
 <p>
   <b>Youtubes:</b><br />
-  <% @plot.content.each do |p| %>
+  <% @plot.content.split(' ').each do |p| %>
 
 <%= raw(p) %>
 
 	<% end %>
 </p>
 
--->
+
+<% end %>
 
 <%= link_to 'Edit', edit_plot_path(@plot) %> |
 <%= link_to 'Back', plots_path %>

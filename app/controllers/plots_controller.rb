@@ -14,6 +14,9 @@ class PlotsController < ApplicationController
   # GET /plots/1.json
   def show
     @plot = Plot.find(params[:id])
+    if @plot.sentiment_value.nil?
+          flash[:notice] = "P ULLR IS P ULLING"
+    end
     string = @plot.name
     @words = @plot.chosen_word
     #    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
