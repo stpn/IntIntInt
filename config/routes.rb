@@ -1,7 +1,8 @@
 YApp::Application.routes.draw do
   resources :plots
 
-
+  require 'resque/server'
+#  require 'resque/status_server'
 
   resources :users, :user_sessions
    match 'login' => 'user_sessions#new', :as => :login
