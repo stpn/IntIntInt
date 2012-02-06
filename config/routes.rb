@@ -29,7 +29,7 @@ YApp::Application.routes.draw do
   resources :evaluation
 
   resources :videos
-  
+  mount Resque::Server.new, :at => "/resque"
 #  root :to => 'videos#index'
   root :to => "phrases#edit", :as => :homepage
 
