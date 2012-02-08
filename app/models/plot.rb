@@ -246,6 +246,10 @@ class Plot < ActiveRecord::Base
   end
 
 
+
+
+
+
   def self.create_iframes(ytids)
     result = Array.new
     ytids.each do |y|

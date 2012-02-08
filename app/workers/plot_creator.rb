@@ -20,6 +20,7 @@ class PlotCreator
       @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
       @plot.content = (Plot.create_iframes(youtubeids))
       @plot.chosen_word = words
+      @plot.timepoint = youtubeids
       @plot.sentiment_value = Plot.find_sentiment_value(words)
       @plot.save
   end
