@@ -14,7 +14,7 @@ class PlotsController < ApplicationController
   # GET /plots/1.json
   def show
     @plot = Plot.find(params[:id])
-    if @plot.sentiment_value.nil?
+    if @plot.timepoint.nil?
           flash[:notice] = "P ULLR IS P ULLING"
     end
     string = @plot.name
