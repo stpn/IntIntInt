@@ -22,7 +22,9 @@ class PlotsController < ApplicationController
     #    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
     respond_to do |format|
       format.html # show.html.erb
-      format.json { render json: @plot.timepoint }
+      format.json do
+        render :json => @plot.as_json(:only => :timepoint, :methods => :name)
+      end
       format.xml { render xml: @plot }
     end
   end
