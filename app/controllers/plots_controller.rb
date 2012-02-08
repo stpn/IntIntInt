@@ -23,7 +23,7 @@ class PlotsController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.json do
-        render :json => @plot.as_json(:only => :timepoint, :methods => :name)
+        render :json => @plot.as_json(:only => :timepoint)
       end
       format.xml { render xml: @plot }
     end

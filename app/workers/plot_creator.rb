@@ -22,7 +22,7 @@ class PlotCreator
       @plot.chosen_word = words
       str = youtubeids.gsub(/\n/,'')
       str = youtubeids.gsub(/-/,'')
-      @plot.timepoint = youtubeids
+      @plot.timepoint = str
       @plot.sentiment_value = Plot.find_sentiment_value(words)
       @plot.save
   end
