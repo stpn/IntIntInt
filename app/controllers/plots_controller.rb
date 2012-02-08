@@ -22,7 +22,7 @@ class PlotsController < ApplicationController
     #    @plot.chosen_word.sort_by { |substr|  string.index(substr) }
     respond_to do |format|
       format.html # show.html.erb
-      format.json { render json: @plot }
+      format.json { render json: @plot.chosen_word }
       format.xml { render xml: @plot }
     end
   end

@@ -17,14 +17,14 @@ class PlotCreator
         end
       end
       youtubeids = Plot.pull_youtubeids_with_timecodes_with_hash(youtubeids, hash_of_search)
-#      @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
-#      @plot.content = (Plot.create_iframes(youtubeids))
-#      @plot.chosen_word = words
+      @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
+      @plot.content = (Plot.create_iframes(youtubeids))
+      @plot.chosen_word = words
       str = youtubeids.gsub(/\n/,'')
       str = youtubeids.gsub(/-/,'')
       @plot.timepoint = youtubeids
-#      @plot.sentiment_value = Plot.find_sentiment_value(words)
-#      @plot.save
+      @plot.sentiment_value = Plot.find_sentiment_value(words)
+      @plot.save
   end
 end
 
