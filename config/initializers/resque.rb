@@ -1,6 +1,8 @@
 
+ENV["REDISTOGO_URL"] ||= "redis://stpn:6517cfc074b96099471820759b9228b8@chubb.redistogo.com:9164/"
 
-ENV["REDISTOGO_URL"] ||= "redis://stpn:b8be70ed6ebfb7d0c5b248d2e4fd4ae2@perch.redistogo.com:9511/"
+
+Dir["#{Rails.root}/app/workers/*.rb"].each { |file| require file }
 
 uri = URI.parse(ENV["REDISTOGO_URL"])
 Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)

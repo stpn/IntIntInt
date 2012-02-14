@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120207234322) do
+ActiveRecord::Schema.define(:version => 20120211195447) do
 
   create_table "comments", :force => true do |t|
     t.text     "content",    :limit => 255
@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(:version => 20120207234322) do
     t.text     "chosen_word",     :limit => 255, :default => "'--- []\n'"
     t.float    "sentiment_value"
     t.string   "timepoint"
+    t.string   "galaxy"
   end
 
   create_table "user_sessions", :force => true do |t|

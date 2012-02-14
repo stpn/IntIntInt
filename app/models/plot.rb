@@ -2,13 +2,31 @@ class Plot < ActiveRecord::Base
   include ParsingHelpers
   include NewThings
 
-#  serialize :chosen_word, Array
-#  serialize :youtubeid, Array
-#  serialize :content, Array
+  #  serialize :chosen_word, Array
+  #  serialize :youtubeid, Array
+  #  serialize :content, Array
 
   @boom = Object.new
 
 
+  def search_galaxy
+    result = Hash.new
+    if self.galaxy == 'youtube'
+      result = Plot.search_youtube(self.name)
+    elsif self.galaxy == 'vimeo'
+      result = Plot.search_vimeo(self.name)
+    end
+    return result
+  end
+
+  def self.search_vimeo(query)
+    @sorted_words = Array.new
+    result = stringed_hash
+    video_hash = Hash.new{|h,k| h[k] = nil }
+    @search = Plot.clean_search(query)
+    phrases = []
+    multiple_words = @search.split(' ')
+   end
   #####THIS IS FOR JUST ONE KEYWORD
 
 

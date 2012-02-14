@@ -2,10 +2,9 @@ class PlotCreator
   @queue = :plots_queue
   def self.perform(plot_id)
     @plot = Plot.find(plot_id)
-     query = @plot.name
       youtubeids = Array.new
       words = Array.new
-      hash_of_search = Plot.search_youtube(query)
+      hash_of_search = @plot.search_galaxy
       #    new_hash = Plot.filter_by_sentiment(hash_of_search, query)
       #    new_hash.each do |k,v|
       #      v.split(' ').each do |f|
@@ -20,10 +19,10 @@ class PlotCreator
       @plot.youtubeid = (Plot.create_youtubelinks(youtubeids))
       @plot.content = (Plot.create_iframes(youtubeids))
       @plot.chosen_word = words
-      @plot.timepoint = ytids
+      @plot.timepoint = youtubeids
       @plot.sentiment_value = Plot.find_sentiment_value(words)
       @plot.save
-      @plot.timepoint = @plot.timepoint.gsub(/\n/,'')
+      @plot.timepoint = @plot.timepoint.join(' ').gsub(/\n/,'')
       @plot.timepoint = @plot.timepoint.gsub(/-/,'')
       @plot.save
   end

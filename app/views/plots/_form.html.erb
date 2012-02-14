@@ -20,6 +20,16 @@
 <h2>    <%= f.label :name, "What is the video about?" %></h2><br />
     <%= f.text_area :name %>
   </div>
+
+Which universe are we diving into?
+	<div >
+	  <%= f.radio_button :galaxy, 'youtube' %>Youtube
+	</div>
+	<div>
+	  <%= f.radio_button :galaxy, 'vimeo' %>Vimeo
+	</div>
+	
+	
   <div class="actions">
     <%= f.submit %>
   </div>

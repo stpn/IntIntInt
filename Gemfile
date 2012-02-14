@@ -9,6 +9,7 @@ gem 'resque'
 
 gem 'rake', '0.8.7'
 gem 'resque'
+gem 'vimeo'
 
 gem 'whenever'
 gem 'viddl-rb'
