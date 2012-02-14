@@ -48,10 +48,11 @@ class PlotsController < ApplicationController
   # POST /plots
   # POST /plots.json
   def create
-    @plot = Plot.new(params[:plot])
-   @plot.save
+  @plot = Plot.new(params[:plot])
+   @plot.save!
+    if @plot.save
    Resque.enqueue(PlotCreator, @plot.id)
-   
+ end
     respond_to do |format|
 
       if @plot.save
