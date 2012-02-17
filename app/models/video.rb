@@ -15,12 +15,14 @@ class Video < ActiveRecord::Base
     views_array = Array.new
     id_array = Array.new
     query.videos.each do |wow|
-      video_string = wow.video_id
-      content_string = video_string[/video:(.*)/]
-      real_video_id = $1
-      keywords_string = wow.keywords
-      video_hash  = {real_video_id => keywords_string}
-      video_array.push video_hash
+      if wow.noembed == false
+        video_string = wow.video_id
+        content_string = video_string[/video:(.*)/]
+        real_video_id = $1
+        keywords_string = wow.keywords
+        video_hash  = {real_video_id => keywords_string}
+        video_array.push video_hash
+      end
     end
     return video_array
   end
@@ -127,36 +129,87 @@ class Video < ActiveRecord::Base
 
   def self.remove_videos_without_downloads
     #This deletes objects that don't have corresponding files
-    objects_list = String.new
-    f = File.open('downloads.txt', 'r')
+    objects_list = ""
+    f = File.open('dledfiles.txt', 'rb')
     video_list = f.read
-    time = Time.now.getutc
-    time = time.to_s
-    File.open(time+'existing_dls.txt', 'a') {|f| f.write(video_list) }
-
+    video_list = video_list.split(' ')
+    #    time = Time.now.getutc
+    #    time = time.to_s
+    #    File.open(time+'existing_dls.txt', 'a') {|f| f.write(video_list) }
     #        video_list = %{}
     Video.all.each do |v|
-      objects_list << v.content
+      v.download = false
+      v.save
     end
-    parsed = objects_list.split.reject { |w| video_list.include?(w) }.join(' ')
-    bad_guys = objects_list - parsed
-    bad_guys.each do |p|
-      wrong = Video.find_by_content(p)
-      Video.destroy(wrong)
+    video_list.each do |v|
+      print v
+      video = Video.find_by_content(v)
+      if !video.nil?
+        video.download = true
+        video.save
+      else
+        objects_list << "#{v} "
+      end
+      File.open('vids_no_db.txt', 'a') {|f| f.write(objects_list) }
     end
+    
+    #    parsed = objects_list.split.reject { |w| video_list.include?(w) }.join(' ')
+    #    bad_guys = objects_list - parsed
+    #    bad_guys.each do |p|
+    #      wrong = Video.find_by_content(p)
+    #      Video.destroy(wrong)
+    #    end
+    #    Video.all.each do |v|
+    #      v.download = false
+    #      v.save
+    #    end
+    #    parsed.split(' ').each do |p|
+    #      good = Video.find_by_content(p)
+    #      good.download = true
+    #      good.save
+    #    end
+
   end
 
   def self.create_list_of_videos_with_downloads
     vids = Video.find_all_by_download(true)
-
     time = Time.now.getutc
     time = time.to_s
     content_string = Array.new
     vids.each do |v|
       content_string << v.content
     end
-
     File.open(time+'vid_w_dls.txt', 'a') {|f| f.write(content_string) }
+  end
+
+
+  def self.videos_phrases_timecodes_to_file
+    time = Time.now.getutc
+    time = time.to_s
+    timecode = ""
+    vid_str = ""
+    dl = true
+    Video.find_all_by_download(true).each do |v|
+      v.phrases.each do |p|
+        timecode = p.timecode
+        mtch = timecode.match(/\d:\d\d\s/)
+        mtch2 = timecode.match(/\d:\d\d$/)
+        if !mtch.nil?
+          dl = true
+        elsif !mtch2.nil?
+          dl = true
+        else
+          dl = false
+        end
+      end
+      if dl == true
+        vid_str << v.content + ", " + timecode + '\n'
+        dl = false
+      end
+    end
+    vid_str.split('\n').each do |str|
+      File.open(time+'+vid+dl_tc.txt', 'a') {|f| f.puts(str) }
+    end
   end
 
 

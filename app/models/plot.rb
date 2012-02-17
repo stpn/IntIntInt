@@ -43,7 +43,7 @@ class Plot < ActiveRecord::Base
       #     mtch = w.match(/\s/)
       #      if mtch.nil?
       if !stop_words.include?(w)
-        @videos = Plot.collect_videos(w)
+        @videos = Plot.collect_videos(w, 1, 0)
         if !@videos.blank?
           video_hash[w] = @videos
 
@@ -66,9 +66,9 @@ class Plot < ActiveRecord::Base
   end
 
 
-  def self.collect_videos(w)
+  def self.collect_videos(w, page, indexing)
     videos = []
-    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym])
+    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym], :max_results => 25, :page => page, :index => indexing, :per_page => 25)
     video_array = Video.pull_videos_from_youtube(query, video_array)
     if !video_array.empty?
       video_array.each do |hash|
@@ -85,7 +85,9 @@ class Plot < ActiveRecord::Base
           end
         end
       end
-    end
+    else
+       Video.collect_videos(w,page+1, indexing+25)
+     end
     return videos
   end
 
@@ -251,10 +253,17 @@ class Plot < ActiveRecord::Base
             #          timecode = '#t='+$1+'m'+$2+'s'
             #        else
             timecode = timecode[/(\d+):(\d\d)/]
-            timecode = '#t='+$1+'m'+$2+'s'
+            a = $1
+            b = $2
+            if a == "0"
+              if b == "00"
+                b = "01"
+              end
+            end
+            timecode = '#t='+a+'m'+b+'s'
             result << "#{y}#{timecode}"
           else
-            timecode = '#t=0m00s'
+            timecode = '#t=0m01s'
             result << "#{y}#{timecode}"
           end
         end
