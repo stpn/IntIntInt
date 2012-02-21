@@ -9,10 +9,10 @@ class Phrase < ActiveRecord::Base
 
 
   def self.build_phrases(videos)
+    p videos
     @phrases = []
     result = Array.new
     videos.each do |video|
-
       phr = Phrase.process_single_video(video)
       if !phr.blank?
         @phrases.push phr

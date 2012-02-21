@@ -37,18 +37,15 @@ class Plot < ActiveRecord::Base
     @search = Plot.clean_search(query)
     phrases = []
     multiple_words = @search.split(' ')
-
     # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
     multiple_words.each do |w|
       #     mtch = w.match(/\s/)
       #      if mtch.nil?
-      if !stop_words.include?(w)
-        @videos = Plot.collect_videos(w, 1, 0)
+        @videos = Plot.collect_videos(w, 1, 1)
         if !@videos.blank?
           video_hash[w] = @videos
-
         end
-      end
+ #     end
     end
     video_hash.each do |k,v|
       if !v.blank?
@@ -67,9 +64,21 @@ class Plot < ActiveRecord::Base
 
 
   def self.collect_videos(w, page, indexing)
+    print "WORD IS :" + w
+    ticker = 0
+    word = w 
     videos = []
-    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym], :max_results => 25, :page => page, :index => indexing, :per_page => 25)
+    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym], :max_results => 25, :page => page, :index => indexing, :per_page => 25) 
+    query.videos.each do |vid|
+      if vid.noembed == false
+        ticker = ticker+1
+      end
+    end
+    if ticker < 20
+      Plot.collect_videos(word, page+1, indexing+25)
+    end
     video_array = Video.pull_videos_from_youtube(query, video_array)
+    print video_array
     if !video_array.empty?
       video_array.each do |hash|
         hash.each do |k,v|
@@ -86,9 +95,13 @@ class Plot < ActiveRecord::Base
         end
       end
     else
-       Video.collect_videos(w,page+1, indexing+25)
+       videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
      end
+     if videos.blank?
+       videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
+     else
     return videos
+  end
   end
 
 
@@ -104,7 +117,16 @@ class Plot < ActiveRecord::Base
     @search = @search.gsub(/\d{2,}/, ' ').downcase
     @search = @search.gsub(/\s{2,}/, ' ').downcase
     @search = @search.gsub(/\\/, '').downcase
-    return @search
+    search = @search.split(' ')
+    search.each do |w|
+      if stop_words.include?(w)
+        search.delete(w)
+        print w + ' '
+      end
+    end
+    search = search.join(' ')
+    print search
+    return search
   end
 
   ##########Process queries##################################

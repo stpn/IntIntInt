@@ -1,0 +1,24 @@
+== 1.0.0, released 2009-09-28
+
+* Upgraded to v2 of the API.
+* Added some upload helpers.
+* Huge refactor for the Advanced API making it easier to add/modify method calls.
+
+== 0.2.2, released 2009-04-21
+
+* Removed CGI escapes. Vimeo should be handling them on their end.
+
+== 0.2.1, released 2009-01-06
+
+* Last version was missing files.
+
+== 0.2.0, released 2009-01-06
+
+* Major re-factor of each request method.
+* Separated the simple and advanced APIs into their own modules.
+* Added some documentation.
+* Updated the README.
+
+== 0.1.2, released 2008-10-26
+
+* Initial release

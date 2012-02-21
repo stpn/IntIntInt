@@ -1,0 +1,13 @@
+History.txt
+LICENSE.txt
+Manifest.txt
+README.txt
+Rakefile
+lib/engtagger.rb
+lib/engtagger/porter.rb
+lib/engtagger/pos_tags.hash
+lib/engtagger/pos_words.hash
+lib/engtagger/tags.yml
+lib/engtagger/unknown.yml
+lib/engtagger/words.yml
+test/test_engtagger.rb

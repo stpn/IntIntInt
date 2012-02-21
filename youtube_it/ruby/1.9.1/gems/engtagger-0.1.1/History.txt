@@ -1,0 +1,10 @@
+=== 0.1.0 / 2008-05-14
+
+* Modified Synopsis section of Readme.txt
+* Created a description of tag set in Readme.txt
+* Fixed a few minor bugs 
+
+=== 0.1.0 / 2008-05-06
+
+* Initial release
+* Functionalities are basically the same as those of Perl Lingua::EN::Tagger. 

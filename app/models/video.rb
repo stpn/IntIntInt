@@ -10,23 +10,23 @@ class Video < ActiveRecord::Base
 
   def self.pull_videos_from_youtube(query, video_array)
     video_array = []
-    video_string = String.new
-    keywords_array = Array.new
-    views_array = Array.new
-    id_array = Array.new
     query.videos.each do |wow|
-      if wow.noembed == false
-        video_string = wow.video_id
-        content_string = video_string[/video:(.*)/]
-        real_video_id = $1
-        keywords_string = wow.keywords
-        video_hash  = {real_video_id => keywords_string}
-        video_array.push video_hash
-      end
+      video_array = video_array + Video.process_single_yt_from_query(wow)
     end
     return video_array
   end
 
+  def self.process_single_yt_from_query(wow)
+    video_array = []
+
+      video_string = wow.video_id
+      content_string = video_string[/video:(.*)/]
+      real_video_id = $1
+      keywords_string = wow.keywords
+      video_hash  = {real_video_id => keywords_string}
+      video_array.push video_hash
+    return video_array
+  end
 
   def self.check_db_for_yt(video_array)
     video_array.each do |hash|
@@ -43,6 +43,51 @@ class Video < ActiveRecord::Base
     return video_array
   end
 
+  def self.pull_remaining_from_youtube
+    i = 0
+    videos = []
+    f = File.open('remain.txt', 'rb')
+    video_list = f.read
+    video_list = video_list.split(' ')
+    video_list.each do |ytid|
+      v = Video.find_by_content(ytid)
+      if !v.nil?
+        v.destroy
+      end
+    end
+    video_list.each do |ytid|
+      if Video.find_by_content(ytid).nil?
+        i = i+1
+        query = Video.yt_session.video_by(ytid)
+        #RESCUE THIS:
+        video_array = Video.process_single_yt_from_query(query)
+
+        if !video_array.empty?
+          video_array.each do |hash|
+            hash.each do |k,v|
+              comments = Video.load_comments(k)
+              if comments != "--- []\n"
+                vid = Video.create
+                vid.content  = k
+                vid.keywords = v
+                vid.comments = comments
+                vid.download = true
+                vid.save!
+                #            (:content => k, :keywords => v, :comments => comments )
+                videos << vid.content
+              end
+            end
+          end
+        end
+        if i == 15
+          sleep(5)
+          i = 0
+        end
+      end
+    end
+    File.open('remained_w_cmnts.txt', 'a') {|f| f.write(videos.join(' ')) }
+    return videos
+  end
 
 
   def self.load_comments(youtube_id)
@@ -130,7 +175,7 @@ class Video < ActiveRecord::Base
   def self.remove_videos_without_downloads
     #This deletes objects that don't have corresponding files
     objects_list = ""
-    f = File.open('dledfiles.txt', 'rb')
+    f = File.open('vids_from_loc.txt', 'rb')
     video_list = f.read
     video_list = video_list.split(' ')
     #    time = Time.now.getutc
@@ -147,12 +192,13 @@ class Video < ActiveRecord::Base
       if !video.nil?
         video.download = true
         video.save
-      else
+      end
+      if video.nil?
         objects_list << "#{v} "
       end
-      File.open('vids_no_db.txt', 'a') {|f| f.write(objects_list) }
+      File.open('vids_empty_db.txt', 'a') {|f| f.write(objects_list) }
     end
-    
+
     #    parsed = objects_list.split.reject { |w| video_list.include?(w) }.join(' ')
     #    bad_guys = objects_list - parsed
     #    bad_guys.each do |p|
@@ -188,28 +234,61 @@ class Video < ActiveRecord::Base
     time = time.to_s
     timecode = ""
     vid_str = ""
-    dl = true
+    vid_comm_str = ""
+    dl = false
+    dl2 = false
     Video.find_all_by_download(true).each do |v|
-      v.phrases.each do |p|
-        timecode = p.timecode
-        mtch = timecode.match(/\d:\d\d\s/)
-        mtch2 = timecode.match(/\d:\d\d$/)
-        if !mtch.nil?
-          dl = true
-        elsif !mtch2.nil?
-          dl = true
-        else
-          dl = false
+
+      ##
+      if !v.phrases.nil?
+        v.phrases.each do |p|
+          timecode = p.timecode
+          mtch2 = timecode.match(/(^\d\d:\d\d)/)
+          mtch = timecode.match(/(^\d:\d\d)/)
+          if !mtch.nil?
+            dl = true
+          elsif !mtch2.nil?
+            dl2 = true
+          else
+            dl = false
+            dl2 = false
+          end
+          if dl == true
+            tmc2 = "00:0#{timecode}"
+            tmc = tmc2[/(\d\d:\d\d:\d\d)/]
+            tmc = $1
+            vid_comm_str << v.content + '||||>>||<<||||' + tmc + '||||>>||<<||||' + "#{p.id}" + '||||>>||<<||||' + p.content + ' ||<><><>|| '
+            vid_str << v.content + '||||>>||<<||||' + tmc + ' ||<><><>|| '
+            dl = false
+          end
+          if dl2 == true
+            tmc2 = "00:#{timecode}"
+            tmc = tmc2[/(\d\d:\d\d:\d\d)/]
+            tmc = $1
+            vid_comm_str << v.content + '||||>>||<<||||' + tmc + '||||>>||<<||||' + "#{p.id}" + '||||>>||<<||||' + p.content + ' ||<><><>|| '
+            vid_str << v.content + '||||>>||<<||||' + tmc + ' ||<><><>|| '
+            dl2 = false
+          end
         end
       end
-      if dl == true
-        vid_str << v.content + ", " + timecode + '\n'
-        dl = false
+    end
+    i = 0
+    v = 0
+    vid_str.split(' ||<><><>|| ').each_slice(2000) do |ary|
+      ary.each do |str|
+        File.open(i.to_s+'_just_video.txt', 'a') {|f| f.puts(str) }
       end
+      i = i+1
+      print "#{i} "
     end
-    vid_str.split('\n').each do |str|
-      File.open(time+'+vid+dl_tc.txt', 'a') {|f| f.puts(str) }
+    vid_comm_str.split(' ||<><><>|| ').each_slice(2000) do |ary|
+      ary.each do |str|
+        File.open(v.to_s+'_video_and_comments.txt', 'a') {|f| f.puts(str) }
+      end
+      print "#{v} "
+      v = v+1
     end
+
   end
 
 
