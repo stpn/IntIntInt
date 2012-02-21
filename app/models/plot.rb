@@ -11,11 +11,11 @@ class Plot < ActiveRecord::Base
 
   def search_galaxy
     result = Hash.new
-    if self.galaxy == 'youtube'
-      result = Plot.search_youtube(self.name)
-    elsif self.galaxy == 'vimeo'
-      result = Plot.search_vimeo(self.name)
-    end
+#    if self.galaxy == 'youtube'
+    result = Plot.search_youtube(self.name)
+ #   elsif self.galaxy == 'vimeo'
+   #   result = Plot.search_vimeo(self.name)
+  #  end
     return result
   end
 
