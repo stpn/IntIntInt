@@ -248,7 +248,11 @@ class Plot < ActiveRecord::Base
   def self.select_multiples(search)
     multiple_words = Array.new
     tagged_phrases = Plot.tag_phrases(search)
+    puts 'THIS IS TAGGED \n'
+    print tagged_phrases.nil?
+    puts 'END FOR TAGGED \n'    
     # This is creation of the array with unique words
+    if !tagged_phrases.nil?
     tagged_phrases.each do |k,v|
       mtch = k.match(/\s/)
       if !mtch.nil?
@@ -257,10 +261,14 @@ class Plot < ActiveRecord::Base
     end
     multiple_words = Plot.remove_multiple_word_duplicates(multiple_words)
     result = multiple_words
+  else
+    multiple_words << search
+    result = multiple_words
+  end
     return result
   end
 
-  def self.select_singles(search)
+  def self.select_single(search)
     multiple_words = Array.new
     tagged_words = Plot.tag_words(search)
     # This is creation of the array with unique words
@@ -269,7 +277,6 @@ class Plot < ActiveRecord::Base
     result = tagged_words
     return result
   end
-
 
   def self.tag_phrases(search)
     tgr = EngTagger.new
@@ -293,6 +300,7 @@ class Plot < ActiveRecord::Base
     result = tagged
     return result
   end
+
 
   def self.merge_multiples_and_singles(multiple_words, search)
     single_words = Array.new
@@ -320,7 +328,6 @@ class Plot < ActiveRecord::Base
   end
 
 
-
   #########CLEANS NOUN PHRASES FROM REPEATED WORDS######
   #####################################################
 
@@ -341,7 +348,6 @@ class Plot < ActiveRecord::Base
     end
     result = multiple_words_array - temp_arr
   end
-
 
 
 
