@@ -470,7 +470,9 @@ class Plot < ActiveRecord::Base
     search_hash.each do |k, v|
       ytids.each do |y|
         if y == k
-          phrase = v[/phraseis\s(\d*)\s/]
+          print v
+          phrase = v[/phraseis\s(\d*)/]
+          print phrase
           timecode = Phrase.find_by_id($1).timecode
           mtch2 = timecode.match(/(\d+:\d\d)/)
           if !mtch2.nil?

@@ -7,7 +7,7 @@ gem 'youtube_it','2.1.3', :path => 'vendor/gems/youtube_it-2.1.3'
 
 gem 'resque'
 
-gem 'rake', '0.8.7'
+gem 'rake', '~> 0.8.7'
 gem 'resque'
 gem 'vimeo'
 
