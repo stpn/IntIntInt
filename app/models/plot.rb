@@ -11,11 +11,12 @@ class Plot < ActiveRecord::Base
 
   def search_galaxy
     result = Hash.new
-#    if self.galaxy == 'youtube'
+    #    if self.galaxy == 'youtube'
+    #result = Plot.search_youtube_most_keywords(self.name)
     result = Plot.search_youtube(self.name)
- #   elsif self.galaxy == 'vimeo'
-   #   result = Plot.search_vimeo(self.name)
-  #  end
+    #   elsif self.galaxy == 'vimeo'
+    #   result = Plot.search_vimeo(self.name)
+    #  end
     return result
   end
 
@@ -26,7 +27,7 @@ class Plot < ActiveRecord::Base
     @search = Plot.clean_search(query)
     phrases = []
     multiple_words = @search.split(' ')
-   end
+  end
   #####THIS IS FOR JUST ONE KEYWORD
 
 
@@ -39,15 +40,13 @@ class Plot < ActiveRecord::Base
     multiple_words = @search.split(' ')
     # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
     multiple_words.each do |w|
-      #     mtch = w.match(/\s/)
-      #      if mtch.nil?
-        @videos = Plot.collect_videos(w, 1, 1)
-        if !@videos.blank?
-          video_hash[w] = @videos
-        end
- #     end
+             @videos = Plot.collect_videos(w, 1, 1) #this one looks for just one word
+#      @videos = Plot.collect_videos_with_most_words_from_query(w, multiple_words, 1, 1)
+      video_hash[w] = @videos
+      #     end
     end
     video_hash.each do |k,v|
+      
       if !v.blank?
         phrases = Phrase.build_phrases(v)
         if !phrases.blank?
@@ -61,14 +60,49 @@ class Plot < ActiveRecord::Base
     p "#{result}  <<<<<<<<< RESULT"
     return result
   end
+  
+  
+  def self.search_youtube_most_keywords(query)
+    @sorted_words = Array.new
+    result = stringed_hash
+    video_hash = Hash.new{|h,k| h[k] = nil }
+    @search = Plot.clean_search(query)
+    phrases = []
+    w_ary = []
+    multiple_words = Plot.select_multiples(@search)
+    single_words = Plot.select_singles(@search)
+    multiple_words.each do |w|
+      w_ary << w.parameterize.to_sym
+    end
+    # This finds words in our metaword corpus and returns y_ids with words that are present         !!!! STOPWORD CHECKING!!
+    w_ary.each do |w|
+      @videos = Plot.collect_videos_with_most_words_from_query(w, multiple_words, 1, 1)
+      video_hash[w] = @videos
+      #     end
+    end
+    video_hash.each do |k,v|
+      print "VIDEO IS #{v}"
+      
+      if !v.blank?
+        phrases = Phrase.build_phrases(v)
+        if !phrases.blank?
+          closest_phrase = Video.find_by_content(v[0]).phrases[0]
+          result[k] << closest_phrase.video.content
+          result[closest_phrase.video.content] << "phraseis #{closest_phrase.id} "
+        end
+      end
+    end
+    #   end
+    p "#{result}  <<<<<<<<< RESULT"
+    return result
+  end
 
 
   def self.collect_videos(w, page, indexing)
-    print "WORD IS :" + w
     ticker = 0
-    word = w 
+    word = w
     videos = []
-    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym], :max_results => 25, :page => page, :index => indexing, :per_page => 25) 
+    query = Video.yt_session.videos_by(:categories => [w.parameterize.to_sym], :max_results => 25, :page => page, :index => indexing, :per_page => 25)
     query.videos.each do |vid|
       if vid.noembed == false
         ticker = ticker+1
@@ -77,7 +111,8 @@ class Plot < ActiveRecord::Base
     if ticker < 20
       Plot.collect_videos(word, page+1, indexing+25)
     end
-    video_array = Video.pull_videos_from_youtube(query, video_array)
+    video_array = Video.pull_videos_from_youtube(query)
+    print 'VIDEO ARRAY IS :'
     print video_array
     if !video_array.empty?
       video_array.each do |hash|
@@ -89,22 +124,98 @@ class Plot < ActiveRecord::Base
             vid.keywords = v
             vid.comments = comments
             vid.save!
-            #            (:content => k, :keywords => v, :comments => comments )
             videos << vid
           end
         end
       end
     else
-       videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
-     end
-     if videos.blank?
-       videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
-     else
-    return videos
-  end
+      videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
+    end
+    if videos.blank?
+      videos = videos + Plot.collect_videos(word ,page+1, indexing+25)
+    else
+      return videos
+    end
   end
 
 
+
+  ################CHECK QUERIES FOR EACH WORD FROM SENTENCE#################
+
+  def self.collect_videos_with_most_words_from_query(w, words, page, indexing)
+    ticker = 0
+    word = w
+    videos = []
+    v_ary = []
+    w_ary = []
+    query = Video.yt_session.videos_by(:categories => w_ary, :max_results => 25, :page => page, :index => indexing, :per_page => 25)
+    if query.videos.blank?
+      ind = words.index(w)
+      if ind != 0
+        words = words.drop(1)
+      else
+        words = words[1...words.length]
+      Plot.collect_videos(word, words.drop, page+1, indexing+25)
+    end
+  end
+    query.videos.each do |vid|
+      if vid.noembed == false
+        ticker = ticker+1
+      end
+    end
+    if ticker < 20
+      Plot.collect_videos(word, words, page+1, indexing+25)
+    end
+    video_array = Video.pull_videos_from_youtube(query)
+    print video_array
+    if !video_array.empty?
+      video_array.each do |hash|
+        hash.each do |k,v|
+          comments = Video.load_comments(k)
+          if comments != "--- []\n"
+            vid = Video.create
+            vid.content  = k
+            vid.keywords = v
+            vid.comments = comments
+            vid.save!
+            videos << vid
+          end
+        end
+      end
+    else
+      videos = videos + Plot.collect_videos_with_most_words_from_query(word, words, page+1, indexing+25)
+    end
+    if videos.blank?
+      videos = videos + Plot.collect_videos_with_most_words_from_query(word, words, page+1, indexing+25)
+    end
+      return videos
+  end
+
+
+
+  def self.check_videos_for_words(searchwords, vid_ary)
+    vid_name = ""
+    num_ary = []
+    video_hash = Hash.new{|h,k| h[k] = 0 }
+    vid_ary.each do |vid|
+      i = 0
+      searchwords.each do |w|
+        if vid.keywords.split(' ').include?(w)
+          i= i+1
+        end
+        video_hash[i] = vid
+        num_ary << i
+      end
+    end
+    maxim = num_ary.max
+    if maxim > 2
+      result = [video_hash[maxim]]
+    else
+      result = 0
+    end
+    print "MAXIM: #{maxim}"
+    return result
+  end
 
   ##########Clean search##################################
   ###########################################################
@@ -149,7 +260,7 @@ class Plot < ActiveRecord::Base
     return result
   end
 
-  def self.select_single(search)
+  def self.select_singles(search)
     multiple_words = Array.new
     tagged_words = Plot.tag_words(search)
     # This is creation of the array with unique words
@@ -209,6 +320,7 @@ class Plot < ActiveRecord::Base
   end
 
 
+
   #########CLEANS NOUN PHRASES FROM REPEATED WORDS######
   #####################################################
 
@@ -232,6 +344,94 @@ class Plot < ActiveRecord::Base
 
 
 
+
+  ########POS CONVERTING#########
+  ##############################
+  def self.convert_to_pos(tagged_by_engtagger)
+    @verbs = Array.new
+    @nouns = Array.new
+    @adverbs = Array.new
+    @adjs = Array.new
+    @adj_string =  %w{jj jjr jjs}
+    @noun_string = %w{nn nnp nnps}
+    @adverb_string = %w{rb rbr rbs rp}
+    @verb_string = %w{md vb vbd vbg vbn vbp vbz}
+
+    # Parse parts of speech
+    doc = Nokogiri::XML('<xml>'+tagged_by_engtagger+'</xml>')
+    @parts_of_speech = doc.xpath('/xml').map do |i|
+      {'jj' => i.xpath('jj').collect(&:text),
+       'jjr' => i.xpath('jjr').collect(&:text),
+       'jjs' => i.xpath('jjs').collect(&:text),
+
+       'nn' => i.xpath('nn').collect(&:text),
+       'nnp' => i.xpath('nnp').collect(&:text),
+       'nnps' => i.xpath('nnps').collect(&:text),
+
+       'rb' => i.xpath('rb').collect(&:text),
+       'rbr' => i.xpath('rbr').collect(&:text),
+       'rbs' => i.xpath('rbs').collect(&:text),
+       'rp' => i.xpath('rp').collect(&:text),
+
+       'md' => i.xpath('md').collect(&:text),
+       'vb' => i.xpath('vb').collect(&:text),
+       'vbd' => i.xpath('vbd').collect(&:text),
+       'vbg' => i.xpath('vbg').collect(&:text),
+       'vbn' => i.xpath('vbn').collect(&:text),
+       'vbp' => i.xpath('vbp').collect(&:text),
+       'vbz' => i.xpath('vbz').collect(&:text)
+       }
+    end
+
+    @parts_of_speech.each do |i|
+      i.each do |k,v|
+        if v.empty?
+          i.delete(k)
+        end
+      end
+    end
+
+    #Fill array of parts of speech
+    @parts_of_speech.each do |i|
+      i.each do |k,v|
+        if @verb_string.include?(k)
+          @verbs << v
+        elsif @adj_string.include?(k)
+          @adjs << v
+        elsif @adverb_string.include?(k)
+          @adverbs << v
+        elsif @noun_string.include?(k)
+          @nouns << v
+        end
+      end
+    end
+
+    @verbs = @verbs.join(' ').split(' ')
+    @adjs = @adjs.join(' ').split(' ')
+    @adverbs = @adverbs.join(' ').split(' ')
+    @nouns = @nouns.join(' ').split(' ')
+    @new_parts = {"verbs" => @verbs, "adjs" => @adjs, "adverbs" => @adverbs, "nouns" => @nouns}
+    return @new_parts
+
+  end
+
+  def self.build_pos_hash(parts_of_speech, neg)
+    #Creating hash of parts of speech
+    neg_to_pos = stringed_hash
+    parts_of_speech.each do |k,v|
+      if k == "verbs"
+        neg_to_pos["verbs"] << (neg & v).uniq.join(' ')
+      elsif k == "adjs"
+        neg_to_pos['adjs'] << (neg & v).uniq.join(' ')
+      elsif k == "nouns"
+        neg_to_pos['nouns'] << (neg & v).uniq.join(' ')
+      elsif k == "adverbs"
+        neg_to_pos['adverbs'] << (neg & v).uniq.join(' ')
+      end
+    end
+
+    return neg_to_pos
+  end
 
 
   #######Create HTMLs############
@@ -264,7 +464,7 @@ class Plot < ActiveRecord::Base
     search_hash.each do |k, v|
       ytids.each do |y|
         if y == k
-          phrase = v[/phraseis\s(.*)/]
+          phrase = v[/phraseis\s(\d*)\s/]
           timecode = Phrase.find_by_id($1).timecode
           mtch2 = timecode.match(/(\d+:\d\d)/)
           if !mtch2.nil?
@@ -321,6 +521,7 @@ class Plot < ActiveRecord::Base
   #
 
   def self.find_sentiment_value(comment)
+    comment = comment.to_s
     found_value = false
     rating = 0
     ###NOT THE BEST RESCUE::

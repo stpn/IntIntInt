@@ -8,7 +8,7 @@ class Video < ActiveRecord::Base
 
 
 
-  def self.pull_videos_from_youtube(query, video_array)
+  def self.pull_videos_from_youtube(query)
     video_array = []
     query.videos.each do |wow|
       video_array = video_array + Video.process_single_yt_from_query(wow)
@@ -18,13 +18,13 @@ class Video < ActiveRecord::Base
 
   def self.process_single_yt_from_query(wow)
     video_array = []
-
-      video_string = wow.video_id
-      content_string = video_string[/video:(.*)/]
-      real_video_id = $1
-      keywords_string = wow.keywords
-      video_hash  = {real_video_id => keywords_string}
-      video_array.push video_hash
+    video_string = wow.video_id
+    content_string = video_string[/video:(.*)/]
+    real_video_id = $1
+    keywords_string = wow.keywords
+    video_hash  = {real_video_id => keywords_string}
+    print video_hash
+    video_array.push video_hash
     return video_array
   end
 
