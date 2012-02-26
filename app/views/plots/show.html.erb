@@ -18,7 +18,7 @@
 <p>
   <b>Links:</b>
 
-  <% @plot.youtubeid.split('- ')[1...@plot.youtubeid.length].each do |y| %>
+  <% @plot.timepoint.split(' ')[1...@plot.timepoint.length].each do |y| %>
 	<font color="red">http://www.youtube.com/watch?v=<%= y %> </font>|| 
 	<% end %>
 </p>
@@ -38,7 +38,7 @@
 </p>
 <p>
   <b>Youtubes:</b><br />
-  <% @plot.youtubeid.split('- ')[1...@plot.youtubeid.length].each do |p| %>
+  <% @plot.timepoint.split(' ')[1...@plot.timepoint.length].each do |p| %>
 
   <iframe width='320' height='200' src= http://www.youtube.com/embed/<%= p %>frameborder='0' ></iframe>
 	<% end %>

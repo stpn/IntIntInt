@@ -16,7 +16,6 @@ class PlotCreator
         end
       end
       youtubeids = Plot.pull_youtubeids_with_timecodes_with_hash(youtubeids, hash_of_search)
-      @plot.youtubeid = youtubeids
       @plot.chosen_word = words
       @plot.timepoint = youtubeids
       @plot.sentiment_value = Plot.find_sentiment_value(words)
