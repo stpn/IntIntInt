@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120226001427) do
+ActiveRecord::Schema.define(:version => 20120226195814) do
 
   create_table "comments", :force => true do |t|
     t.text     "content",    :limit => 255
@@ -97,9 +97,9 @@ ActiveRecord::Schema.define(:version => 20120226001427) do
     t.datetime "updated_at"
     t.string   "title"
     t.text     "youtubeid"
-    t.text     "chosen_word",     :limit => 255, :default => "'--- []\n'"
+    t.text     "chosen_word",     :limit => 255, :default => "'"
     t.float    "sentiment_value"
-    t.string   "timepoint"
+    t.text     "timepoint",       :limit => 255, :default => "'--- []\n'"
     t.string   "galaxy"
   end
 
