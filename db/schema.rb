@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120211195447) do
+ActiveRecord::Schema.define(:version => 20120226001427) do
 
   create_table "comments", :force => true do |t|
     t.text     "content",    :limit => 255
@@ -128,6 +128,7 @@ ActiveRecord::Schema.define(:version => 20120211195447) do
     t.string   "views"
     t.boolean  "download"
     t.string   "rating"
+    t.integer  "duration"
   end
 
   add_index "videos", ["comments"], :name => "index_videos_on_comments"

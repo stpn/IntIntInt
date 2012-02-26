@@ -117,10 +117,16 @@ class Plot < ActiveRecord::Base
     if !video_array.empty?
       video_array.each do |hash|
         hash.each do |k,v|
-          comments = Video.load_comments(k)
+          arr = k.split(/\sDURATION\s/)
+          v_id = arr[0]
+          duration = Integer(arr[1])
+          print "DURATION \n"
+          print duration.class
+          comments = Video.load_comments(v_id, duration)
           if comments != "--- []\n"
             vid = Video.create
-            vid.content  = k
+            vid.content  = v_id
+            vid.duration = duration
             vid.keywords = v
             vid.comments = comments
             vid.save!

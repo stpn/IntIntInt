@@ -19,8 +19,10 @@ class Video < ActiveRecord::Base
   def self.process_single_yt_from_query(wow)
     video_array = []
     video_string = wow.video_id
+    duration = wow.duration
     content_string = video_string[/video:(.*)/]
-    real_video_id = $1
+    print "BOOOO"
+    real_video_id = $1 +" DURATION #{duration}"
     keywords_string = wow.keywords
     video_hash  = {real_video_id => keywords_string}
     print video_hash
@@ -90,16 +92,38 @@ class Video < ActiveRecord::Base
   end
 
 
-  def self.load_comments(youtube_id)
+  def self.load_comments(youtube_id, duration)
     @comments_content = String.new
     @comments_array = Array.new
     comments_query = Video.yt_session.comments(youtube_id)
-
     comments_query.each do |comment|
       @comments_content = "PARSEFROMHERE " + comment.content + " ENDPARSEFROMHERE"
-      matches = @comments_content.match(/\d+:\d+/)
+      matches = @comments_content.match(/\d{1,2}:\d\d/)
       if !matches.nil?
-        @comments_array.push @comments_content
+        timecode = @comments_content.scan(/(\d{1,2}:\d\d)/).join(',')
+        timecode = timecode.split(',')
+        puts "#{timecode} << TIMECODE for #{@comments_content}"
+        time = timecode[0].split(':')
+        puts "#{time} for #{youtube_id}" 
+        seconds = time[1]
+        puts seconds
+        minutes = time[0]
+        mtch2 = minutes.match(/0\d/)
+        if !mtch2.nil?
+          minutes = Integer(minutes[1])
+        else
+          minutes = Integer(minutes)
+        end
+        mtch = seconds.match(/0\d/)
+        if !mtch.nil?
+          seconds = Integer(seconds[1])
+        else
+          seconds = Integer(seconds)
+        end
+        time2 = minutes*60+seconds
+        if (Integer(duration) - Integer(time2)) > 8
+          @comments_array.push @comments_content
+        end
       end
     end
     return @comments_array
