@@ -1,18 +1,10 @@
 source 'http://rubygems.org'
 
 gem 'rails', '3.1.1'
-
 gem 'youtube_it','2.1.3', :path => 'vendor/gems/youtube_it-2.1.3'
-
-
-gem 'resque'
-
 gem 'rake', '~> 0.8.7'
 gem 'resque'
-gem 'vimeo'
-
 gem 'whenever'
-gem 'viddl-rb'
 gem 'kaminari'
 gem 'authlogic'
 gem 'yaml_db'
@@ -21,7 +13,6 @@ gem 'heroku'
 gem 'pg', :group => [:production]
 gem 'sqlite3', :group => [:development, :test]
 gem 'jquery-rails'
-
 gem 'engtagger'
 gem 'nokogiri'
 gem  'activerecord-import'

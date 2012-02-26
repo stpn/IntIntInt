@@ -1,9 +1,4 @@
 PATH
-  remote: vendor/gems/rwordnet-0.1.3
-  specs:
-    rwordnet (0.1.3)
-
-PATH
   remote: vendor/gems/youtube_it-2.1.3
   specs:
     youtube_it (2.1.3)
@@ -90,10 +85,6 @@ GEM
       rake (>= 0.8.1)
       rubyforge (>= 1.0.0)
     hpricot (0.8.6)
-    httparty (0.8.1)
-      multi_json
-      multi_xml
-    httpclient (2.2.4)
     i18n (0.6.0)
     jquery-rails (1.0.19)
       railties (~> 3.0)
@@ -112,7 +103,6 @@ GEM
       treetop (~> 1.4.8)
     mime-types (1.17.2)
     multi_json (1.1.0)
-    multi_xml (0.4.1)
     multipart-post (1.1.5)
     nokogiri (1.5.0)
     oauth (0.4.4)
@@ -197,14 +187,6 @@ GEM
       multi_json (>= 1.0.2)
     vegas (0.1.11)
       rack (>= 1.0.0)
-    viddl-rb (0.5.5)
-      nokogiri
-    vimeo (1.5.1)
-      httparty (>= 0.4.5)
-      httpclient (>= 2.1.5.2)
-      json (>= 1.1.9)
-      multipart-post (>= 1.0.1)
-      oauth (>= 0.4.3)
     whenever (0.7.3)
       activesupport (>= 2.3.4)
       chronic (~> 0.6.3)
@@ -227,14 +209,11 @@ DEPENDENCIES
   rails (= 3.1.1)
   rake (~> 0.8.7)
   resque
-  rwordnet (= 0.1.3)!
   sass-rails
   sqlite3
   thin
   turn
   uglifier (>= 1.0.3)
-  viddl-rb
-  vimeo
   whenever
   yaml_db
   youtube_it (= 2.1.3)!
