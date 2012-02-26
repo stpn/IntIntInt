@@ -18,8 +18,8 @@
 <p>
   <b>Links:</b>
 
- <% @plot.youtubeid.split(' ').each do |y| %>
-	<font color="red">	<%= y %> </font>|| 
+  <% @plot.youtubeid.split('- ')[1...@plot.youtubeid.length].each do |y| %>
+	<font color="red">http://www.youtube.com/watch?v=<%= y %> </font>|| 
 	<% end %>
 </p>
 
@@ -27,8 +27,7 @@
 	  <b>Plot words:</b><br />
 
 
-	  <% @words.split(' ').each do |w| %>
-	<font color="blue"><%= w %></font>|
+  <% @words.split('- ')[1...@words.length].each do |w| %>	<font color="blue"><%= w %></font>|
 	<% end %>
 	
 	</p>
@@ -39,10 +38,9 @@
 </p>
 <p>
   <b>Youtubes:</b><br />
-  <% @plot.content.split(' ').each do |p| %>
+  <% @plot.youtubeid.split('- ')[1...@plot.youtubeid.length].each do |p| %>
 
-<%= raw(p) %>
-
+  <iframe width='320' height='200' src= http://www.youtube.com/embed/<%= p %>frameborder='0' ></iframe>
 	<% end %>
 </p>
 
