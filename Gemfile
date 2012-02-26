@@ -22,7 +22,6 @@ gem 'pg', :group => [:production]
 gem 'sqlite3', :group => [:development, :test]
 gem 'jquery-rails'
 
-gem 'rwordnet', '0.1.3', :path => 'vendor/gems/rwordnet-0.1.3'
 gem 'engtagger'
 gem 'nokogiri'
 gem  'activerecord-import'
